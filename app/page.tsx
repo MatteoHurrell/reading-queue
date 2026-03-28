@@ -1,65 +1,145 @@
-import Image from "next/image";
+'use client'
 
-export default function Home() {
+import { useState } from 'react'
+import Link from 'next/link'
+import { BookOpen } from 'lucide-react'
+import AppShell from '@/components/layout/AppShell'
+import { useReadingItems } from '@/hooks/use-reading-items'
+import EditItemModal from '@/components/reading-items/EditItemModal'
+import ConfirmDeleteDialog from '@/components/reading-items/ConfirmDeleteDialog'
+import SummaryStats from '@/components/dashboard/SummaryStats'
+import CurrentlyReadingPanel from '@/components/dashboard/CurrentlyReadingPanel'
+import RecommendedReads from '@/components/dashboard/RecommendedReads'
+import QuickWinsPanel from '@/components/dashboard/QuickWinsPanel'
+import NeglectedItemsPanel from '@/components/dashboard/NeglectedItemsPanel'
+import TopicBreakdownPanel from '@/components/dashboard/TopicBreakdownPanel'
+import RecentCompletionsPanel from '@/components/dashboard/RecentCompletionsPanel'
+import EmptyState from '@/components/shared/EmptyState'
+import { getCurrentlyReading, getQueuedItems, getNeglectedItems, getQuickReads, getInboxItems } from '@/lib/selectors'
+import { getRecommendedReads } from '@/lib/recommendations'
+import { QUICK_READ_MAX_MINUTES, NEGLECT_THRESHOLD_DAYS } from '@/lib/constants'
+import type { ReadingItem } from '@/lib/types'
+
+export default function DashboardPage() {
+  const { items, updateItem, deleteItem, transitionStatus, toggleFavorite } = useReadingItems()
+
+  const [editItem, setEditItem] = useState<ReadingItem | null>(null)
+  const [deleteId, setDeleteId] = useState<string | null>(null)
+
+  const currentlyReading = getCurrentlyReading(items)
+  const recommended = getRecommendedReads(items)
+  const quickReads = getQuickReads(items, QUICK_READ_MAX_MINUTES).slice(0, 4)
+  const neglected = getNeglectedItems(items, NEGLECT_THRESHOLD_DAYS).slice(0, 5)
+  const queuedItems = getQueuedItems(items)
+  const inboxItems = getInboxItems(items)
+
+  const deleteTarget = deleteId ? items.find((i) => i.id === deleteId) : null
+
+  const isCompletelyEmpty = items.length === 0
+
+  function handleEdit(item: ReadingItem) {
+    setEditItem(item)
+  }
+
+  function handleDelete(id: string) {
+    setDeleteId(id)
+  }
+
+  function handleConfirmDelete() {
+    if (deleteId) {
+      deleteItem(deleteId)
+      setDeleteId(null)
+    }
+  }
+
   return (
-    <div className="flex flex-col flex-1 items-center justify-center bg-zinc-50 font-sans dark:bg-black">
-      <main className="flex flex-1 w-full max-w-3xl flex-col items-center justify-between py-32 px-16 bg-white dark:bg-black sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={100}
-          height={20}
-          priority
-        />
-        <div className="flex flex-col items-center gap-6 text-center sm:items-start sm:text-left">
-          <h1 className="max-w-xs text-3xl font-semibold leading-10 tracking-tight text-black dark:text-zinc-50">
-            To get started, edit the page.tsx file.
-          </h1>
-          <p className="max-w-md text-lg leading-8 text-zinc-600 dark:text-zinc-400">
-            Looking for a starting point or more instructions? Head over to{" "}
-            <a
-              href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Templates
-            </a>{" "}
-            or the{" "}
-            <a
-              href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Learning
-            </a>{" "}
-            center.
-          </p>
+    <AppShell pageTitle="Dashboard">
+      {isCompletelyEmpty ? (
+        <div className="flex items-center justify-center min-h-[60vh]">
+          <EmptyState
+            icon={<BookOpen className="size-5" />}
+            heading="Welcome to Reading Queue"
+            subtext="Save your first article to get started."
+          />
         </div>
-        <div className="flex flex-col gap-4 text-base font-medium sm:flex-row">
-          <a
-            className="flex h-12 w-full items-center justify-center gap-2 rounded-full bg-foreground px-5 text-background transition-colors hover:bg-[#383838] dark:hover:bg-[#ccc] md:w-[158px]"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={16}
-              height={16}
+      ) : (
+        <div className="flex flex-col gap-6 max-w-5xl mx-auto">
+          {/* Inbox triage banner */}
+          {inboxItems.length > 0 && (
+            <Link
+              href="/inbox"
+              className="flex items-center justify-between px-4 py-2.5 bg-amber-500/10 border border-amber-500/20 rounded-lg text-sm hover:bg-amber-500/15 hover:border-amber-500/30 transition-colors group"
+            >
+              <span className="text-amber-400/80 group-hover:text-amber-400 transition-colors">
+                You have{' '}
+                <span className="font-semibold text-amber-400">
+                  {inboxItems.length} {inboxItems.length === 1 ? 'item' : 'items'}
+                </span>{' '}
+                in your inbox to triage
+              </span>
+              <span className="text-amber-400/50 group-hover:text-amber-400/80 text-xs transition-colors">
+                Go to Inbox &rarr;
+              </span>
+            </Link>
+          )}
+
+          {/* Section 1 — Summary stats */}
+          <SummaryStats items={items} />
+
+          {/* Section 2 — Currently Reading */}
+          <CurrentlyReadingPanel
+            items={currentlyReading}
+            onTransition={transitionStatus}
+          />
+
+          {/* Section 3 — Recommended Next Reads */}
+          <RecommendedReads
+            items={recommended}
+            onEdit={handleEdit}
+            onDelete={handleDelete}
+            onTransition={transitionStatus}
+            onToggleFavorite={toggleFavorite}
+          />
+
+          {/* Section 4 + 5 — Quick Wins + Neglected (side by side on larger screens) */}
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            <QuickWinsPanel
+              items={quickReads}
+              onEdit={handleEdit}
+              onDelete={handleDelete}
+              onTransition={transitionStatus}
+              onToggleFavorite={toggleFavorite}
             />
-            Deploy Now
-          </a>
-          <a
-            className="flex h-12 w-full items-center justify-center rounded-full border border-solid border-black/[.08] px-5 transition-colors hover:border-transparent hover:bg-black/[.04] dark:border-white/[.145] dark:hover:bg-[#1a1a1a] md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Documentation
-          </a>
+            <NeglectedItemsPanel
+              items={neglected}
+              onTransition={transitionStatus}
+            />
+          </div>
+
+          {/* Section 6 — Topic Snapshot */}
+          <TopicBreakdownPanel items={queuedItems} />
+
+          {/* Section 7 — Recent Completions */}
+          <RecentCompletionsPanel
+            items={items}
+            onToggleFavorite={toggleFavorite}
+          />
         </div>
-      </main>
-    </div>
-  );
+      )}
+
+      <EditItemModal
+        item={editItem}
+        open={editItem !== null}
+        onClose={() => setEditItem(null)}
+        onSave={updateItem}
+      />
+
+      <ConfirmDeleteDialog
+        open={deleteTarget !== null}
+        itemTitle={deleteTarget?.title ?? ''}
+        onConfirm={handleConfirmDelete}
+        onCancel={() => setDeleteId(null)}
+      />
+    </AppShell>
+  )
 }
