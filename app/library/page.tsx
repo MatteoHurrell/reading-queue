@@ -156,7 +156,7 @@ export default function LibraryPage() {
             placeholder="Search by title, publisher, author, tags, or notes…"
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            className="w-full h-9 bg-[#141414] border border-white/[0.08] rounded-lg pl-9 pr-9 text-sm text-white/80 placeholder:text-white/30 outline-none focus:border-white/[0.16] transition-colors"
+            className="w-full h-9 bg-white/[0.05] border border-white/[0.08] rounded-xl pl-9 pr-9 text-sm text-white/70 placeholder:text-white/25 outline-none focus:border-indigo-500/40 transition-colors"
           />
           {searchQuery && (
             <button
@@ -177,28 +177,40 @@ export default function LibraryPage() {
             setSearchQuery('')
           }}
         >
-          <TabsList className="bg-[#141414] border border-white/[0.08] h-9 gap-0 p-0.5">
-            <TabsTrigger value="finished" className="gap-1.5">
+          <TabsList className="bg-white/[0.03] border border-white/[0.07] rounded-xl p-1 h-auto gap-0.5">
+            <TabsTrigger
+              value="finished"
+              className="gap-1.5 rounded-lg data-[state=active]:bg-white/[0.08] data-[state=active]:text-white data-[state=inactive]:text-white/40 data-[state=inactive]:hover:text-white/60 transition-all duration-200"
+            >
               Finished
-              <span className="inline-flex items-center justify-center min-w-[18px] h-[18px] px-1 rounded-full bg-white/[0.08] text-white/50 text-[10px] font-medium tabular-nums">
+              <span className="text-[10px] px-1.5 py-0.5 rounded-full bg-white/[0.06] text-white/40 ml-1.5 tabular-nums">
                 {finishedItems.length}
               </span>
             </TabsTrigger>
-            <TabsTrigger value="archived" className="gap-1.5">
+            <TabsTrigger
+              value="archived"
+              className="gap-1.5 rounded-lg data-[state=active]:bg-white/[0.08] data-[state=active]:text-white data-[state=inactive]:text-white/40 data-[state=inactive]:hover:text-white/60 transition-all duration-200"
+            >
               Archived
-              <span className="inline-flex items-center justify-center min-w-[18px] h-[18px] px-1 rounded-full bg-white/[0.08] text-white/50 text-[10px] font-medium tabular-nums">
+              <span className="text-[10px] px-1.5 py-0.5 rounded-full bg-white/[0.06] text-white/40 ml-1.5 tabular-nums">
                 {archivedItems.length}
               </span>
             </TabsTrigger>
-            <TabsTrigger value="dropped" className="gap-1.5">
+            <TabsTrigger
+              value="dropped"
+              className="gap-1.5 rounded-lg data-[state=active]:bg-white/[0.08] data-[state=active]:text-white data-[state=inactive]:text-white/40 data-[state=inactive]:hover:text-white/60 transition-all duration-200"
+            >
               Dropped
-              <span className="inline-flex items-center justify-center min-w-[18px] h-[18px] px-1 rounded-full bg-white/[0.08] text-white/50 text-[10px] font-medium tabular-nums">
+              <span className="text-[10px] px-1.5 py-0.5 rounded-full bg-white/[0.06] text-white/40 ml-1.5 tabular-nums">
                 {droppedItems.length}
               </span>
             </TabsTrigger>
-            <TabsTrigger value="favorites" className="gap-1.5">
+            <TabsTrigger
+              value="favorites"
+              className="gap-1.5 rounded-lg data-[state=active]:bg-white/[0.08] data-[state=active]:text-white data-[state=inactive]:text-white/40 data-[state=inactive]:hover:text-white/60 transition-all duration-200"
+            >
               Favorites
-              <span className="inline-flex items-center justify-center min-w-[18px] h-[18px] px-1 rounded-full bg-white/[0.08] text-white/50 text-[10px] font-medium tabular-nums">
+              <span className="text-[10px] px-1.5 py-0.5 rounded-full bg-white/[0.06] text-white/40 ml-1.5 tabular-nums">
                 {favoriteItems.length}
               </span>
             </TabsTrigger>
@@ -206,7 +218,7 @@ export default function LibraryPage() {
 
           {/* Finished tab */}
           <TabsContent value="finished" className="mt-4">
-            <div className="bg-[#141414] border border-white/[0.08] rounded-lg overflow-hidden">
+            <div className="bg-white/[0.03] backdrop-blur-md border border-white/[0.07] rounded-2xl overflow-hidden">
               {visibleItems.length === 0 ? (
                 <TabEmpty
                   message={EMPTY_MESSAGES[activeTab]}
@@ -227,7 +239,7 @@ export default function LibraryPage() {
 
           {/* Archived tab */}
           <TabsContent value="archived" className="mt-4">
-            <div className="bg-[#141414] border border-white/[0.08] rounded-lg overflow-hidden">
+            <div className="bg-white/[0.03] backdrop-blur-md border border-white/[0.07] rounded-2xl overflow-hidden">
               {visibleItems.length === 0 ? (
                 <TabEmpty
                   message={
@@ -250,7 +262,7 @@ export default function LibraryPage() {
 
           {/* Dropped tab */}
           <TabsContent value="dropped" className="mt-4">
-            <div className="bg-[#141414] border border-white/[0.08] rounded-lg overflow-hidden">
+            <div className="bg-white/[0.03] backdrop-blur-md border border-white/[0.07] rounded-2xl overflow-hidden">
               {visibleItems.length === 0 ? (
                 <TabEmpty
                   message={
@@ -273,7 +285,7 @@ export default function LibraryPage() {
 
           {/* Favorites tab */}
           <TabsContent value="favorites" className="mt-4">
-            <div className="bg-[#141414] border border-white/[0.08] rounded-lg overflow-hidden">
+            <div className="bg-white/[0.03] backdrop-blur-md border border-white/[0.07] rounded-2xl overflow-hidden">
               {visibleItems.length === 0 ? (
                 <TabEmpty
                   message={

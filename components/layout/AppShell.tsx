@@ -28,7 +28,7 @@ export default function AppShell({ pageTitle, children, showSearch = false, onSe
   }
 
   return (
-    <div className="flex min-h-screen bg-background">
+    <div className="flex min-h-screen">
       <SidebarNav inboxCount={inboxCount} queuedCount={queuedCount} />
       <div className="flex flex-col flex-1 md:ml-56 min-h-screen">
         <TopBar
@@ -38,7 +38,7 @@ export default function AppShell({ pageTitle, children, showSearch = false, onSe
           searchQuery={searchQuery}
           onSearchChange={handleSearchChange}
         />
-        <main className="flex-1 px-4 md:px-6 py-6 overflow-auto">
+        <main className="flex-1 px-6 py-6 overflow-auto">
           {children}
         </main>
       </div>

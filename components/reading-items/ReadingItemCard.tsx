@@ -1,6 +1,7 @@
 'use client'
 
 import { Star, MoreHorizontal, ExternalLink, Clock } from 'lucide-react'
+import { motion } from 'framer-motion'
 import { Button } from '@/components/ui/button'
 import {
   DropdownMenu,
@@ -32,30 +33,42 @@ export default function ReadingItemCard({
   onToggleFavorite,
 }: Props) {
   return (
-    <div className="flex items-center gap-4 px-4 py-3 bg-[#1a1a1a] border border-white/[0.08] rounded-xl hover:border-white/15 hover:bg-[#1f1f1f] transition-colors duration-150">
+    <motion.div
+      whileHover={{ y: -1 }}
+      transition={{ duration: 0.15 }}
+      className="flex items-center gap-4 px-5 py-4 bg-white/[0.03] backdrop-blur-sm border border-white/[0.07] rounded-2xl hover:border-white/[0.14] hover:bg-white/[0.05] hover:shadow-[0_4px_24px_rgba(0,0,0,0.25)] transition-all duration-200 cursor-default"
+    >
       {/* Left: title + publisher/author */}
       <div className="flex-1 min-w-0">
         <a
           href={item.url}
           target="_blank"
           rel="noopener noreferrer"
-          className="text-sm font-medium text-white/90 hover:text-white transition-colors line-clamp-1 leading-snug"
+          className="text-sm font-semibold text-slate-100 hover:text-white leading-snug line-clamp-1 transition-colors duration-200"
         >
           {item.title}
         </a>
-        <div className="flex items-center gap-1.5 mt-0.5">
-          <span className="text-sm text-white/50">{item.publisher}</span>
+        <div className="flex items-center gap-1 mt-0.5">
+          <span className="text-xs text-white/40">{item.publisher}</span>
           {item.author && item.author !== item.publisher && (
             <>
               <span className="text-white/20 text-xs">·</span>
-              <span className="text-xs text-white/30">{item.author}</span>
+              <span className="text-xs text-white/40">{item.author}</span>
             </>
           )}
         </div>
+
+        {/* Badge row */}
+        <div className="flex flex-wrap items-center gap-1.5 mt-2.5 sm:hidden">
+          <SourceTypeBadge sourceType={item.sourceType} />
+          <TopicBadge topic={item.topic} />
+          <PriorityBadge priority={item.priority} />
+          <StatusBadge status={item.status} />
+        </div>
       </div>
 
-      {/* Middle: badge row */}
-      <div className="hidden sm:flex flex-wrap items-center gap-1.5 mt-1.5 flex-shrink-0">
+      {/* Middle: badge row (desktop) */}
+      <div className="hidden sm:flex flex-wrap items-center gap-1.5 flex-shrink-0">
         <SourceTypeBadge sourceType={item.sourceType} />
         <TopicBadge topic={item.topic} />
         <PriorityBadge priority={item.priority} />
@@ -65,26 +78,26 @@ export default function ReadingItemCard({
       {/* Right: meta + actions */}
       <div className="flex items-center gap-2 flex-shrink-0">
         {item.estimatedMinutes !== undefined && (
-          <span className="flex items-center gap-1 text-xs text-white/40 tabular-nums">
+          <span className="flex items-center gap-1 text-xs text-white/30 tabular-nums">
             <Clock className="size-3 flex-shrink-0" />
             {formatReadTime(item.estimatedMinutes)}
           </span>
         )}
-        <span className="text-xs text-white/30 hidden md:block">
+        <span className="text-xs text-white/20 hidden md:block">
           {formatRelativeDate(item.createdAt)}
         </span>
 
         {/* Favorite star */}
         <button
           onClick={() => onToggleFavorite(item.id)}
-          className={`p-1 rounded transition-colors ${
+          className={`p-1 rounded transition-colors duration-200 ${
             item.isFavorite
-              ? 'text-amber-400 hover:text-amber-300'
+              ? 'text-yellow-400 hover:text-yellow-300'
               : 'text-white/20 hover:text-white/50'
           }`}
           aria-label={item.isFavorite ? 'Remove from favorites' : 'Add to favorites'}
         >
-          <Star className="size-3.5" fill={item.isFavorite ? 'currentColor' : 'none'} />
+          <Star className="size-4" fill={item.isFavorite ? 'currentColor' : 'none'} />
         </button>
 
         {/* Actions menu */}
@@ -94,7 +107,7 @@ export default function ReadingItemCard({
               <Button
                 variant="ghost"
                 size="icon-sm"
-                className="text-white/30 hover:text-white/70 hover:bg-white/[0.06]"
+                className="text-white/25 hover:text-white/60 hover:bg-white/[0.06]"
                 aria-label="More actions"
               />
             }
@@ -145,6 +158,6 @@ export default function ReadingItemCard({
           </DropdownMenuContent>
         </DropdownMenu>
       </div>
-    </div>
+    </motion.div>
   )
 }

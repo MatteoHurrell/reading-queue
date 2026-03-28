@@ -53,14 +53,15 @@ export default function InboxPage() {
         {/* Page header */}
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
-            <h1 className="text-xl font-semibold text-white/90">Inbox</h1>
-            <span className="text-sm text-amber-400 font-medium tabular-nums bg-amber-500/15 border border-amber-500/25 px-2 py-0.5 rounded-full">
+            <h1 className="text-2xl font-bold text-white tracking-tight">Inbox</h1>
+            <span className="bg-amber-500/10 border border-amber-500/20 text-amber-400 text-xs font-medium px-2 py-0.5 rounded-full tabular-nums">
               {inboxItems.length}
             </span>
           </div>
           <Button
             size="sm"
-            className="gap-1.5"
+            className="gap-1.5 border-0 text-white transition-all duration-200"
+            style={{ background: 'linear-gradient(135deg, #6366f1, #8b5cf6)' }}
             onClick={() => setAddOpen(true)}
           >
             <Plus className="size-3.5" />
@@ -82,7 +83,7 @@ export default function InboxPage() {
             {inboxItems.map((item) => (
               <div
                 key={item.id}
-                className="flex flex-col rounded-lg overflow-hidden border border-white/[0.08] hover:border-white/[0.14] transition-colors"
+                className="group flex flex-col rounded-2xl overflow-hidden border border-white/[0.07] hover:border-white/[0.14] hover:shadow-[0_8px_32px_rgba(0,0,0,0.3)] transition-all duration-200 bg-white/[0.03]"
               >
                 <ReadingItemCard
                   item={item}
@@ -135,22 +136,21 @@ interface TriageBarProps {
 
 function TriageBar({ item, onTransition, onUpdate }: TriageBarProps) {
   return (
-    <div className="flex items-center gap-2 px-4 py-2 bg-[#111111] border-t border-white/[0.06]">
+    <div className="bg-white/[0.02] border-t border-white/[0.05] rounded-b-2xl px-4 py-3 flex items-center gap-3">
       <Button
         size="sm"
-        className="h-7 px-3 text-xs bg-blue-600/80 hover:bg-blue-600 text-white border-0"
+        className="h-7 px-3 text-xs border-0 text-white transition-all duration-200"
+        style={{ background: 'linear-gradient(135deg, #6366f1, #8b5cf6)' }}
         onClick={() => onTransition(item.id, 'queued')}
       >
         Move to Queue
       </Button>
-      <Button
-        size="sm"
-        variant="outline"
-        className="h-7 px-3 text-xs border-red-500/25 text-red-400/70 hover:text-red-400 hover:border-red-500/40 hover:bg-red-500/10"
+      <button
+        className="h-7 px-3 text-xs bg-red-500/10 border border-red-500/20 text-red-400 hover:bg-red-500/20 rounded-lg transition-all duration-200"
         onClick={() => onTransition(item.id, 'dropped')}
       >
         Drop
-      </Button>
+      </button>
       <div className="flex items-center gap-2 ml-auto">
         <Select
           value={item.priority}

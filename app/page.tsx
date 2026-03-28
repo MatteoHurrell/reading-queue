@@ -63,24 +63,24 @@ export default function DashboardPage() {
           />
         </div>
       ) : (
-        <div className="flex flex-col space-y-5 max-w-5xl mx-auto px-6 py-6">
+        <div className="max-w-5xl mx-auto px-6 py-6 space-y-4">
           {/* Inbox triage banner */}
           {inboxItems.length > 0 && (
-            <Link
-              href="/inbox"
-              className="flex items-center justify-between px-4 py-2.5 bg-amber-500/10 border border-amber-500/20 rounded-xl text-sm hover:bg-amber-500/15 hover:border-amber-500/30 transition-colors group"
-            >
-              <span className="text-amber-400/80 group-hover:text-amber-400 transition-colors">
+            <div className="bg-amber-500/[0.08] border border-amber-500/15 rounded-2xl px-5 py-3.5 flex items-center justify-between">
+              <span className="text-sm text-amber-200/80">
                 You have{' '}
-                <span className="font-semibold text-amber-400">
+                <span className="font-semibold text-amber-300">
                   {inboxItems.length} {inboxItems.length === 1 ? 'item' : 'items'}
                 </span>{' '}
                 in your inbox to triage
               </span>
-              <span className="text-amber-400/50 group-hover:text-amber-400/80 text-xs transition-colors">
+              <Link
+                href="/inbox"
+                className="text-amber-400 hover:text-amber-300 text-sm font-medium transition-colors"
+              >
                 Go to Inbox &rarr;
-              </span>
-            </Link>
+              </Link>
+            </div>
           )}
 
           {/* Section 1 — Summary stats */}
@@ -102,7 +102,7 @@ export default function DashboardPage() {
           />
 
           {/* Section 4 + 5 — Quick Wins + Neglected (side by side on larger screens) */}
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
             <QuickWinsPanel
               items={quickReads}
               onEdit={handleEdit}

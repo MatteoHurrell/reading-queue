@@ -207,7 +207,7 @@ export default function QueuePage() {
     <AppShell pageTitle="Queue">
       <div className="flex flex-col gap-5">
         {/* Search + Filter bar */}
-        <div className="bg-[#141414] border border-white/[0.08] rounded-lg px-4 py-3 flex flex-col gap-3">
+        <div className="bg-white/[0.03] backdrop-blur-md border border-white/[0.07] rounded-2xl px-4 py-3 flex flex-col gap-3">
           {/* Search row */}
           <div className="relative">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 size-3.5 text-white/30 pointer-events-none" />
@@ -216,7 +216,7 @@ export default function QueuePage() {
               placeholder="Search queue..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full h-8 bg-white/[0.04] border border-white/[0.08] rounded-md pl-8 pr-8 text-sm text-white/80 placeholder:text-white/30 outline-none focus:border-white/[0.16] transition-colors"
+              className="w-full h-8 bg-white/[0.05] border border-white/[0.08] rounded-xl pl-8 pr-8 text-sm text-white/70 placeholder:text-white/25 outline-none focus:border-indigo-500/40 transition-colors"
             />
             {searchQuery && (
               <button
@@ -394,17 +394,17 @@ export default function QueuePage() {
 
         {/* Toolbar: count + view toggle */}
         <div className="flex items-center justify-between gap-3">
-          <span className="text-sm text-white/50">
+          <span className="text-xs text-white/35">
             {filteredItems.length}{' '}
             {filteredItems.length === 1 ? 'item' : 'items'}
           </span>
 
-          <div className="flex items-center gap-1">
+          <div className="flex items-center bg-white/[0.04] border border-white/[0.08] rounded-lg p-1">
             <button
               onClick={() => setViewMode('card')}
-              className={`p-1.5 rounded transition-colors ${
+              className={`p-1.5 rounded transition-all duration-200 ${
                 viewMode === 'card'
-                  ? 'text-white/90 bg-white/[0.08]'
+                  ? 'bg-white/[0.10] text-white'
                   : 'text-white/30 hover:text-white/60'
               }`}
               aria-label="Card view"
@@ -414,9 +414,9 @@ export default function QueuePage() {
             </button>
             <button
               onClick={() => setViewMode('table')}
-              className={`p-1.5 rounded transition-colors ${
+              className={`p-1.5 rounded transition-all duration-200 ${
                 viewMode === 'table'
-                  ? 'text-white/90 bg-white/[0.08]'
+                  ? 'bg-white/[0.10] text-white'
                   : 'text-white/30 hover:text-white/60'
               }`}
               aria-label="Table view"
@@ -454,7 +454,7 @@ export default function QueuePage() {
             ))}
           </div>
         ) : (
-          <div className="bg-[#141414] border border-white/[0.08] rounded-lg overflow-hidden">
+          <div className="bg-white/[0.03] backdrop-blur-md border border-white/[0.07] rounded-2xl overflow-hidden">
             <ReadingItemTable
               items={filteredItems}
               onEdit={handleEdit}

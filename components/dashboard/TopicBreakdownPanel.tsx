@@ -9,14 +9,14 @@ interface Props {
 }
 
 const TOPIC_PILL_COLORS: Record<string, string> = {
-  'markets': 'bg-green-500/15 text-green-400 border-green-500/25',
-  'finance-business': 'bg-blue-500/15 text-blue-400 border-blue-500/25',
-  'tech-product': 'bg-purple-500/15 text-purple-400 border-purple-500/25',
-  'politics-policy': 'bg-red-500/15 text-red-400/80 border-red-500/25',
-  'economics': 'bg-amber-500/15 text-amber-400 border-amber-500/25',
-  'essays-opinion': 'bg-orange-500/15 text-orange-400 border-orange-500/25',
-  'career-learning': 'bg-teal-500/15 text-teal-400 border-teal-500/25',
-  'other': 'bg-white/10 text-white/40 border-white/20',
+  'markets': 'bg-green-500/10 text-green-400 border-green-500/20 hover:border-green-500/35',
+  'finance-business': 'bg-blue-500/10 text-blue-400 border-blue-500/20 hover:border-blue-500/35',
+  'tech-product': 'bg-purple-500/10 text-purple-400 border-purple-500/20 hover:border-purple-500/35',
+  'politics-policy': 'bg-red-500/10 text-red-400 border-red-500/20 hover:border-red-500/35',
+  'economics': 'bg-amber-500/10 text-amber-400 border-amber-500/20 hover:border-amber-500/35',
+  'essays-opinion': 'bg-orange-500/10 text-orange-400 border-orange-500/20 hover:border-orange-500/35',
+  'career-learning': 'bg-teal-500/10 text-teal-400 border-teal-500/20 hover:border-teal-500/35',
+  'other': 'bg-white/[0.05] text-white/40 border-white/[0.10] hover:border-white/20',
 }
 
 export default function TopicBreakdownPanel({ items }: Props) {
@@ -25,8 +25,8 @@ export default function TopicBreakdownPanel({ items }: Props) {
   const topicsWithItems = TOPICS.filter((t) => grouped[t].length > 0)
 
   return (
-    <section className="bg-[#141414] border border-white/[0.08] rounded-xl p-5">
-      <h2 className="text-xs font-semibold text-white/40 uppercase tracking-wider mb-4">
+    <section className="bg-white/[0.03] backdrop-blur-md border border-white/[0.07] rounded-2xl p-5">
+      <h2 className="text-[11px] font-semibold text-white/30 uppercase tracking-widest mb-4">
         Topic Snapshot
       </h2>
 
@@ -40,10 +40,10 @@ export default function TopicBreakdownPanel({ items }: Props) {
             return (
               <span
                 key={topic}
-                className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full border text-xs font-medium ${colorClass}`}
+                className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full border text-xs font-medium transition-all duration-200 ${colorClass}`}
               >
                 {TOPIC_LABELS[topic]}
-                <span className="opacity-70 tabular-nums">{count}</span>
+                <span className="font-normal opacity-60 tabular-nums">{count}</span>
               </span>
             )
           })}

@@ -1,5 +1,6 @@
 'use client'
 
+import { Inbox, BookOpen, BookOpenCheck, CheckCircle } from 'lucide-react'
 import type { ReadingItem } from '@/lib/types'
 import {
   getInboxItems,
@@ -15,17 +16,24 @@ interface Props {
 interface StatCardProps {
   value: number
   label: string
-  accentClass: string
-  borderClass: string
+  subtext: string
+  valueClass: string
+  icon: React.ReactNode
 }
 
-function StatCard({ value, label, accentClass, borderClass }: StatCardProps) {
+function StatCard({ value, label, subtext, valueClass, icon }: StatCardProps) {
   return (
-    <div
-      className={`flex-1 bg-[#141414] border border-white/[0.08] rounded-xl p-5 flex flex-col gap-1 border-t-2 ${borderClass}`}
-    >
-      <span className={`text-4xl font-bold tabular-nums ${accentClass}`}>{value}</span>
-      <span className="text-xs text-white/40 uppercase tracking-wider mt-1">{label}</span>
+    <div className="flex-1 bg-white/[0.03] backdrop-blur-md border border-white/[0.07] rounded-2xl p-5 hover:border-white/[0.12] transition-all duration-200 min-w-0">
+      <div className="flex items-start justify-between">
+        <span className="text-[11px] font-medium text-white/30 uppercase tracking-wider">
+          {label}
+        </span>
+        <span className="flex-shrink-0">{icon}</span>
+      </div>
+      <div className={`text-4xl font-bold tracking-tight mt-2 mb-0.5 ${valueClass}`}>
+        {value}
+      </div>
+      <div className="text-xs text-white/25">{subtext}</div>
     </div>
   )
 }
@@ -41,26 +49,30 @@ export default function SummaryStats({ items }: Props) {
       <StatCard
         value={inboxCount}
         label="Inbox"
-        accentClass="text-amber-400"
-        borderClass="border-t-amber-500/60"
+        subtext="awaiting triage"
+        valueClass="text-amber-400"
+        icon={<Inbox className="size-4 text-amber-500/40" />}
       />
       <StatCard
         value={queuedCount}
         label="Queue"
-        accentClass="text-blue-400"
-        borderClass="border-t-blue-500/60"
+        subtext="ready to read"
+        valueClass="text-indigo-400"
+        icon={<BookOpen className="size-4 text-indigo-500/40" />}
       />
       <StatCard
         value={readingCount}
         label="Reading"
-        accentClass="text-blue-300"
-        borderClass="border-t-blue-400/60"
+        subtext="in progress"
+        valueClass="text-blue-400"
+        icon={<BookOpenCheck className="size-4 text-blue-500/40" />}
       />
       <StatCard
         value={finishedCount}
         label="Finished"
-        accentClass="text-green-400"
-        borderClass="border-t-green-500/60"
+        subtext="all time"
+        valueClass="text-emerald-400"
+        icon={<CheckCircle className="size-4 text-emerald-500/40" />}
       />
     </div>
   )

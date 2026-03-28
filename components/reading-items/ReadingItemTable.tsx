@@ -40,45 +40,45 @@ export default function ReadingItemTable({
   }
 
   return (
-    <div className="w-full overflow-x-auto">
+    <div className="w-full overflow-x-auto rounded-2xl border border-white/[0.07] backdrop-blur-sm">
       <table className="w-full text-sm border-collapse">
         <thead>
-          <tr className="border-b border-white/[0.08]">
-            <th className="text-left px-3 py-2.5 text-xs text-white/40 uppercase tracking-wider font-medium">
+          <tr className="bg-white/[0.03] border-b border-white/[0.07]">
+            <th className="text-left px-4 py-3 text-[11px] font-semibold text-white/30 uppercase tracking-wider">
               Title
             </th>
-            <th className="text-left px-3 py-2.5 text-xs text-white/40 uppercase tracking-wider font-medium hidden md:table-cell">
+            <th className="text-left px-4 py-3 text-[11px] font-semibold text-white/30 uppercase tracking-wider hidden md:table-cell">
               Type / Topic
             </th>
-            <th className="text-left px-3 py-2.5 text-xs text-white/40 uppercase tracking-wider font-medium hidden sm:table-cell">
+            <th className="text-left px-4 py-3 text-[11px] font-semibold text-white/30 uppercase tracking-wider hidden sm:table-cell">
               Priority
             </th>
-            <th className="text-left px-3 py-2.5 text-xs text-white/40 uppercase tracking-wider font-medium hidden sm:table-cell">
+            <th className="text-left px-4 py-3 text-[11px] font-semibold text-white/30 uppercase tracking-wider hidden sm:table-cell">
               Status
             </th>
-            <th className="text-right px-3 py-2.5 text-xs text-white/40 uppercase tracking-wider font-medium hidden lg:table-cell">
+            <th className="text-right px-4 py-3 text-[11px] font-semibold text-white/30 uppercase tracking-wider hidden lg:table-cell">
               Time
             </th>
-            <th className="text-right px-3 py-2.5 text-xs text-white/40 uppercase tracking-wider font-medium hidden lg:table-cell">
+            <th className="text-right px-4 py-3 text-[11px] font-semibold text-white/30 uppercase tracking-wider hidden lg:table-cell">
               Saved
             </th>
-            <th className="px-3 py-2.5 w-8" />
-            <th className="px-3 py-2.5 w-8" />
+            <th className="px-4 py-3 w-8" />
+            <th className="px-4 py-3 w-8" />
           </tr>
         </thead>
         <tbody>
           {items.map((item) => (
             <tr
               key={item.id}
-              className="border-b border-white/[0.06] hover:bg-white/[0.03] transition-colors"
+              className="border-b border-white/[0.04] last:border-0 bg-transparent hover:bg-white/[0.03] transition-colors duration-150"
             >
               {/* Title */}
-              <td className="px-3 py-3 max-w-xs truncate">
+              <td className="px-4 py-3 max-w-xs truncate">
                 <a
                   href={item.url}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="text-white/85 hover:text-white transition-colors line-clamp-1 font-medium leading-snug"
+                  className="text-sm font-medium text-slate-200 hover:text-white transition-colors line-clamp-1 leading-snug"
                 >
                   {item.title}
                 </a>
@@ -91,7 +91,7 @@ export default function ReadingItemTable({
               </td>
 
               {/* Type / Topic */}
-              <td className="px-3 py-2.5 hidden md:table-cell">
+              <td className="px-4 py-3 hidden md:table-cell">
                 <div className="flex flex-col gap-1">
                   <SourceTypeBadge sourceType={item.sourceType} />
                   <TopicBadge topic={item.topic} />
@@ -99,34 +99,34 @@ export default function ReadingItemTable({
               </td>
 
               {/* Priority */}
-              <td className="px-3 py-2.5 hidden sm:table-cell">
+              <td className="px-4 py-3 hidden sm:table-cell">
                 <PriorityBadge priority={item.priority} />
               </td>
 
               {/* Status */}
-              <td className="px-3 py-2.5 hidden sm:table-cell">
+              <td className="px-4 py-3 hidden sm:table-cell">
                 <StatusBadge status={item.status} />
               </td>
 
               {/* Est. time */}
-              <td className="px-3 py-2.5 text-right text-xs text-white/35 tabular-nums hidden lg:table-cell">
+              <td className="px-4 py-3 text-right text-xs text-white/35 tabular-nums hidden lg:table-cell">
                 {item.estimatedMinutes !== undefined
                   ? formatReadTime(item.estimatedMinutes)
                   : '—'}
               </td>
 
               {/* Saved date */}
-              <td className="px-3 py-2.5 text-right text-xs text-white/25 hidden lg:table-cell whitespace-nowrap">
+              <td className="px-4 py-3 text-right text-xs text-white/25 hidden lg:table-cell whitespace-nowrap">
                 {formatRelativeDate(item.createdAt)}
               </td>
 
               {/* Favorite */}
-              <td className="px-3 py-2.5 text-center">
+              <td className="px-4 py-3 text-center">
                 <button
                   onClick={() => onToggleFavorite(item.id)}
-                  className={`p-0.5 rounded transition-colors ${
+                  className={`p-0.5 rounded transition-colors duration-200 ${
                     item.isFavorite
-                      ? 'text-amber-400 hover:text-amber-300'
+                      ? 'text-yellow-400 hover:text-yellow-300'
                       : 'text-white/20 hover:text-white/50'
                   }`}
                   aria-label={item.isFavorite ? 'Remove from favorites' : 'Add to favorites'}
@@ -139,14 +139,14 @@ export default function ReadingItemTable({
               </td>
 
               {/* Actions */}
-              <td className="px-3 py-2.5 text-center">
+              <td className="px-4 py-3 text-center">
                 <DropdownMenu>
                   <DropdownMenuTrigger
                     render={
                       <Button
                         variant="ghost"
                         size="icon-sm"
-                        className="text-white/25 hover:text-white/70 hover:bg-white/[0.06]"
+                        className="text-white/25 hover:text-white/60 hover:bg-white/[0.06]"
                         aria-label="More actions"
                       />
                     }

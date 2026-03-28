@@ -1,6 +1,5 @@
 'use client'
 
-import { Badge } from '@/components/ui/badge'
 import { STATUS_LABELS } from '@/lib/constants'
 import type { ReadingStatus } from '@/lib/types'
 
@@ -9,18 +8,18 @@ interface Props {
 }
 
 const STATUS_CLASSES: Record<ReadingStatus, string> = {
-  inbox: 'bg-amber-500/20 text-amber-400 border-amber-500/30',
-  queued: 'bg-blue-500/20 text-blue-400 border-blue-500/30',
-  reading: 'bg-blue-600/30 text-blue-300 border-blue-500/40',
-  finished: 'bg-green-500/20 text-green-400 border-green-500/30',
-  archived: 'bg-white/10 text-white/50 border-white/20',
-  dropped: 'bg-red-500/15 text-red-400/70 border-red-500/20',
+  inbox: 'bg-amber-500/10 text-amber-300 border border-amber-500/20 ring-0',
+  queued: 'bg-indigo-500/10 text-indigo-300 border border-indigo-500/20',
+  reading: 'bg-blue-500/15 text-blue-300 border border-blue-400/25',
+  finished: 'bg-emerald-500/10 text-emerald-300 border border-emerald-500/20',
+  archived: 'bg-white/[0.05] text-white/35 border border-white/10',
+  dropped: 'bg-red-500/10 text-red-400/70 border border-red-500/15',
 }
 
 export default function StatusBadge({ status }: Props) {
   return (
-    <Badge variant="outline" className={STATUS_CLASSES[status]}>
+    <span className={`inline-flex items-center text-[11px] font-medium px-2 py-0.5 rounded-full ${STATUS_CLASSES[status]}`}>
       {STATUS_LABELS[status]}
-    </Badge>
+    </span>
   )
 }
