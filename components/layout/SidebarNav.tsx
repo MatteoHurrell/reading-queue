@@ -40,21 +40,17 @@ export default function SidebarNav({ inboxCount, queuedCount }: SidebarNavProps)
   ]
 
   return (
-    <aside className="hidden md:flex fixed top-0 left-0 h-full w-56 flex-col z-40 border-r border-white/[0.06]"
-      style={{ background: 'rgba(6,9,18,0.80)', backdropFilter: 'blur(24px)', WebkitBackdropFilter: 'blur(24px)' }}
-    >
+    <aside className="hidden md:flex fixed top-0 left-0 h-full w-56 flex-col z-40 border-r border-gray-200 bg-white">
       {/* App header */}
-      <div className="px-4 py-5 border-b border-white/[0.05] flex items-center gap-2.5">
-        <div className="w-6 h-6 rounded-md flex items-center justify-center flex-shrink-0"
-          style={{ background: 'linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%)' }}
-        >
+      <div className="px-4 py-5 border-b border-gray-100 flex items-center gap-2.5">
+        <div className="w-6 h-6 rounded-md flex items-center justify-center flex-shrink-0 bg-gray-900">
           <BookMarked className="size-3 text-white" />
         </div>
         <div className="flex flex-col min-w-0">
-          <span className="text-sm font-semibold leading-tight gradient-text select-none">
+          <span className="text-sm font-semibold leading-tight text-gray-900 font-serif select-none">
             Reading Queue
           </span>
-          <span className="text-[10px] text-white/20 uppercase tracking-widest leading-tight mt-0.5 select-none">
+          <span className="text-[10px] text-gray-400 uppercase tracking-widest leading-tight mt-0.5 select-none">
             Personal
           </span>
         </div>
@@ -77,15 +73,15 @@ export default function SidebarNav({ inboxCount, queuedCount }: SidebarNavProps)
                 'flex items-center justify-between w-full px-3 py-2 mx-2 rounded-lg text-sm transition-all duration-150',
                 'w-[calc(100%-16px)]',
                 isActive
-                  ? 'bg-indigo-500/10 border border-indigo-500/20 text-indigo-300 font-medium'
-                  : 'text-white/40 hover:text-white/70 hover:bg-white/[0.04] border border-transparent'
+                  ? 'bg-gray-100 text-gray-900 font-medium border border-gray-200'
+                  : 'text-gray-500 hover:text-gray-900 hover:bg-gray-50 border border-transparent'
               )}
             >
               <span className="flex items-center gap-2.5">
                 <Icon
                   className={cn(
                     'size-4 flex-shrink-0 transition-colors duration-150',
-                    isActive ? 'text-indigo-400' : 'text-white/30 group-hover:text-white/50'
+                    isActive ? 'text-gray-900' : 'text-gray-400 group-hover:text-gray-600'
                   )}
                 />
                 {item.label}
@@ -95,8 +91,8 @@ export default function SidebarNav({ inboxCount, queuedCount }: SidebarNavProps)
                   className={cn(
                     'text-[10px] font-medium px-1.5 py-0.5 rounded-full leading-none',
                     item.badgeType === 'inbox'
-                      ? 'bg-amber-500/15 text-amber-400'
-                      : 'bg-indigo-500/15 text-indigo-400'
+                      ? 'bg-amber-50 text-amber-700 border border-amber-200'
+                      : 'bg-blue-50 text-blue-700 border border-blue-200'
                   )}
                 >
                   {item.badge > 99 ? '99+' : item.badge}
@@ -108,8 +104,8 @@ export default function SidebarNav({ inboxCount, queuedCount }: SidebarNavProps)
       </nav>
 
       {/* Footer */}
-      <div className="px-4 py-3 border-t border-white/[0.04]">
-        <p className="text-[10px] text-white/15 select-none">Data stored locally</p>
+      <div className="px-4 py-3 border-t border-gray-100">
+        <p className="text-[10px] text-gray-300 select-none">Data stored locally</p>
       </div>
     </aside>
   )
