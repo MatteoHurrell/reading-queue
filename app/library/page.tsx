@@ -4,14 +4,14 @@ import { useState, useMemo } from 'react'
 import { Search, X as XIcon } from 'lucide-react'
 import AppShell from '@/components/layout/AppShell'
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs'
-import ReadingItemTable from '@/components/reading-items/ReadingItemTable'
+import ReadingItemCard from '@/components/reading-items/ReadingItemCard'
 import EditItemModal from '@/components/reading-items/EditItemModal'
 import ConfirmDeleteDialog from '@/components/reading-items/ConfirmDeleteDialog'
 import EmptyState from '@/components/shared/EmptyState'
 import { useReadingItems } from '@/hooks/use-reading-items'
 import type { ReadingItem } from '@/lib/types'
 
-type LibraryTab = 'finished' | 'archived' | 'dropped' | 'favorites'
+type LibraryTab = 'finished' | 'archived' | 'dropped'
 
 function searchItems(items: ReadingItem[], query: string): ReadingItem[] {
   if (!query.trim()) return items
@@ -20,31 +20,7 @@ function searchItems(items: ReadingItem[], query: string): ReadingItem[] {
     (item) =>
       item.title.toLowerCase().includes(q) ||
       item.publisher.toLowerCase().includes(q) ||
-      (item.author?.toLowerCase().includes(q) ?? false) ||
-      (item.whySaved?.toLowerCase().includes(q) ?? false) ||
-      (item.notes?.toLowerCase().includes(q) ?? false) ||
-      item.tags.some((tag) => tag.toLowerCase().includes(q))
-  )
-}
-
-interface TabEmptyProps {
-  message: string
-  searchQuery?: string
-  onClearSearch?: () => void
-}
-
-function TabEmpty({ message, searchQuery, onClearSearch }: TabEmptyProps) {
-  if (searchQuery) {
-    return (
-      <EmptyState
-        heading="No items match your search"
-        subtext="Try different keywords or clear the search."
-        action={onClearSearch ? { label: 'Clear search', onClick: onClearSearch } : undefined}
-      />
-    )
-  }
-  return (
-    <EmptyState heading={message} />
+      (item.author?.toLowerCase().includes(q) ?? false)
   )
 }
 
@@ -55,7 +31,6 @@ export default function LibraryPage() {
   const [activeTab, setActiveTab] = useState<LibraryTab>('finished')
   const [searchQuery, setSearchQuery] = useState('')
   const [editItem, setEditItem] = useState<ReadingItem | null>(null)
-  const [editOpen, setEditOpen] = useState(false)
   const [deleteId, setDeleteId] = useState<string | null>(null)
 
   const finishedItems = useMemo(
@@ -94,82 +69,49 @@ export default function LibraryPage() {
     [items]
   )
 
-  const favoriteItems = useMemo(
-    () =>
-      items
-        .filter((i) => i.isFavorite)
-        .sort(
-          (a, b) =>
-            new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime()
-        ),
-    [items]
-  )
-
   const tabItems: Record<LibraryTab, ReadingItem[]> = {
     finished: finishedItems,
     archived: archivedItems,
     dropped: droppedItems,
-    favorites: favoriteItems,
   }
 
   const visibleItems = useMemo(
     () => searchItems(tabItems[activeTab], searchQuery),
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    [activeTab, searchQuery, finishedItems, archivedItems, droppedItems, favoriteItems]
+    [activeTab, searchQuery, finishedItems, archivedItems, droppedItems]
   )
 
-  function handleEdit(item: ReadingItem) {
-    setEditItem(item)
-    setEditOpen(true)
-  }
-
-  function handleDeleteRequest(id: string) {
-    setDeleteId(id)
-  }
-
-  function handleDeleteConfirm() {
-    if (deleteId) {
-      deleteItem(deleteId)
-      setDeleteId(null)
-    }
-  }
-
-  const deleteTarget = deleteId
-    ? items.find((i) => i.id === deleteId)
-    : undefined
+  const deleteTarget = deleteId ? items.find((i) => i.id === deleteId) : undefined
 
   const EMPTY_MESSAGES: Record<LibraryTab, string> = {
-    finished: 'Nothing finished yet. Complete something in your queue.',
+    finished: 'Nothing finished yet.',
     archived: 'No archived items.',
     dropped: 'No dropped items.',
-    favorites: 'No favorites yet. Star items you want to keep.',
   }
 
   return (
-    <AppShell pageTitle="Library">
-      <div className="flex flex-col gap-5">
-        {/* Search bar */}
+    <AppShell pageTitle="Archive">
+      <div className="flex flex-col gap-4 max-w-3xl mx-auto">
         <div className="relative">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 size-4 text-gray-400 pointer-events-none" />
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 size-3.5 text-muted-foreground pointer-events-none" />
           <input
             type="text"
-            placeholder="Search by title, publisher, author, tags, or notes…"
+            placeholder="Search..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            className="w-full h-9 bg-gray-50 border border-gray-200 rounded-xl pl-9 pr-9 text-sm text-gray-700 placeholder:text-gray-300 outline-none focus:border-gray-400 transition-colors"
+            className="w-full h-9 bg-card border border-border rounded-lg pl-9 pr-9 text-sm text-foreground placeholder:text-muted-foreground outline-none focus:border-stone-500 focus:ring-1 focus:ring-stone-500/15 transition-colors"
           />
           {searchQuery && (
             <button
               onClick={() => setSearchQuery('')}
-              className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 transition-colors"
+              className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
               aria-label="Clear search"
             >
-              <XIcon className="size-4" />
+              <XIcon className="size-3.5" />
             </button>
           )}
         </div>
 
-        {/* Tabs */}
         <Tabs
           value={activeTab}
           onValueChange={(val) => {
@@ -177,147 +119,71 @@ export default function LibraryPage() {
             setSearchQuery('')
           }}
         >
-          <TabsList className="bg-gray-50 border border-gray-200 rounded-xl p-1 h-auto gap-0.5">
+          <TabsList className="bg-muted/50 border border-border rounded-lg p-1 h-auto gap-0.5">
             <TabsTrigger
               value="finished"
-              className="gap-1.5 rounded-lg data-[state=active]:bg-white data-[state=active]:text-gray-900 data-[state=active]:shadow-sm data-[state=inactive]:text-gray-400 data-[state=inactive]:hover:text-gray-600 transition-all duration-200"
+              className="rounded-md text-xs data-[state=active]:bg-card data-[state=active]:text-foreground data-[state=active]:shadow-sm data-[state=inactive]:text-muted-foreground"
             >
               Finished
-              <span className="text-[10px] px-1.5 py-0.5 rounded-full bg-gray-100 text-gray-400 ml-1.5 tabular-nums">
-                {finishedItems.length}
-              </span>
+              <span className="text-[10px] ml-1.5 text-muted-foreground tabular-nums">{finishedItems.length}</span>
             </TabsTrigger>
             <TabsTrigger
               value="archived"
-              className="gap-1.5 rounded-lg data-[state=active]:bg-white data-[state=active]:text-gray-900 data-[state=active]:shadow-sm data-[state=inactive]:text-gray-400 data-[state=inactive]:hover:text-gray-600 transition-all duration-200"
+              className="rounded-md text-xs data-[state=active]:bg-card data-[state=active]:text-foreground data-[state=active]:shadow-sm data-[state=inactive]:text-muted-foreground"
             >
               Archived
-              <span className="text-[10px] px-1.5 py-0.5 rounded-full bg-gray-100 text-gray-400 ml-1.5 tabular-nums">
-                {archivedItems.length}
-              </span>
+              <span className="text-[10px] ml-1.5 text-muted-foreground tabular-nums">{archivedItems.length}</span>
             </TabsTrigger>
             <TabsTrigger
               value="dropped"
-              className="gap-1.5 rounded-lg data-[state=active]:bg-white data-[state=active]:text-gray-900 data-[state=active]:shadow-sm data-[state=inactive]:text-gray-400 data-[state=inactive]:hover:text-gray-600 transition-all duration-200"
+              className="rounded-md text-xs data-[state=active]:bg-card data-[state=active]:text-foreground data-[state=active]:shadow-sm data-[state=inactive]:text-muted-foreground"
             >
               Dropped
-              <span className="text-[10px] px-1.5 py-0.5 rounded-full bg-gray-100 text-gray-400 ml-1.5 tabular-nums">
-                {droppedItems.length}
-              </span>
-            </TabsTrigger>
-            <TabsTrigger
-              value="favorites"
-              className="gap-1.5 rounded-lg data-[state=active]:bg-white data-[state=active]:text-gray-900 data-[state=active]:shadow-sm data-[state=inactive]:text-gray-400 data-[state=inactive]:hover:text-gray-600 transition-all duration-200"
-            >
-              Favorites
-              <span className="text-[10px] px-1.5 py-0.5 rounded-full bg-gray-100 text-gray-400 ml-1.5 tabular-nums">
-                {favoriteItems.length}
-              </span>
+              <span className="text-[10px] ml-1.5 text-muted-foreground tabular-nums">{droppedItems.length}</span>
             </TabsTrigger>
           </TabsList>
 
-          <TabsContent value="finished" className="mt-4">
-            <div className="bg-white border border-gray-200 rounded-2xl overflow-hidden">
+          {(['finished', 'archived', 'dropped'] as LibraryTab[]).map((tab) => (
+            <TabsContent key={tab} value={tab} className="mt-4">
               {visibleItems.length === 0 ? (
-                <TabEmpty
-                  message={EMPTY_MESSAGES[activeTab]}
-                  searchQuery={searchQuery}
-                  onClearSearch={() => setSearchQuery('')}
+                <EmptyState
+                  heading={searchQuery ? 'No results' : EMPTY_MESSAGES[tab]}
+                  subtext={searchQuery ? 'Try a different search term.' : undefined}
                 />
               ) : (
-                <ReadingItemTable
-                  items={visibleItems}
-                  onEdit={handleEdit}
-                  onDelete={handleDeleteRequest}
-                  onTransition={transitionStatus}
-                  onToggleFavorite={toggleFavorite}
-                />
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  {visibleItems.map((item) => (
+                    <ReadingItemCard
+                      key={item.id}
+                      item={item}
+                      onEdit={setEditItem}
+                      onDelete={setDeleteId}
+                      onTransition={transitionStatus}
+                      onToggleFavorite={toggleFavorite}
+                    />
+                  ))}
+                </div>
               )}
-            </div>
-          </TabsContent>
-
-          <TabsContent value="archived" className="mt-4">
-            <div className="bg-white border border-gray-200 rounded-2xl overflow-hidden">
-              {visibleItems.length === 0 ? (
-                <TabEmpty
-                  message={
-                    searchQuery
-                      ? 'No items match your search.'
-                      : EMPTY_MESSAGES.archived
-                  }
-                />
-              ) : (
-                <ReadingItemTable
-                  items={visibleItems}
-                  onEdit={handleEdit}
-                  onDelete={handleDeleteRequest}
-                  onTransition={transitionStatus}
-                  onToggleFavorite={toggleFavorite}
-                />
-              )}
-            </div>
-          </TabsContent>
-
-          <TabsContent value="dropped" className="mt-4">
-            <div className="bg-white border border-gray-200 rounded-2xl overflow-hidden">
-              {visibleItems.length === 0 ? (
-                <TabEmpty
-                  message={
-                    searchQuery
-                      ? 'No items match your search.'
-                      : EMPTY_MESSAGES.dropped
-                  }
-                />
-              ) : (
-                <ReadingItemTable
-                  items={visibleItems}
-                  onEdit={handleEdit}
-                  onDelete={handleDeleteRequest}
-                  onTransition={transitionStatus}
-                  onToggleFavorite={toggleFavorite}
-                />
-              )}
-            </div>
-          </TabsContent>
-
-          <TabsContent value="favorites" className="mt-4">
-            <div className="bg-white border border-gray-200 rounded-2xl overflow-hidden">
-              {visibleItems.length === 0 ? (
-                <TabEmpty
-                  message={
-                    searchQuery
-                      ? 'No items match your search.'
-                      : EMPTY_MESSAGES.favorites
-                  }
-                />
-              ) : (
-                <ReadingItemTable
-                  items={visibleItems}
-                  onEdit={handleEdit}
-                  onDelete={handleDeleteRequest}
-                  onTransition={transitionStatus}
-                  onToggleFavorite={toggleFavorite}
-                />
-              )}
-            </div>
-          </TabsContent>
+            </TabsContent>
+          ))}
         </Tabs>
       </div>
 
-      {/* Modals */}
       <EditItemModal
         item={editItem}
-        open={editOpen}
-        onClose={() => {
-          setEditOpen(false)
-          setEditItem(null)
-        }}
+        open={editItem !== null}
+        onClose={() => setEditItem(null)}
         onSave={updateItem}
       />
       <ConfirmDeleteDialog
         open={deleteId !== null}
         itemTitle={deleteTarget?.title ?? ''}
-        onConfirm={handleDeleteConfirm}
+        onConfirm={() => {
+          if (deleteId) {
+            deleteItem(deleteId)
+            setDeleteId(null)
+          }
+        }}
         onCancel={() => setDeleteId(null)}
       />
     </AppShell>

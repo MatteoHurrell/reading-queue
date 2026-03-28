@@ -48,39 +48,44 @@
   --radius-4xl: calc(var(--radius) * 2.6);
 }
 
+/*
+ * Claude-style warmth: parchment field (#f5f2ed), true white surfaces, warm charcoal type.
+ * Terracotta (#d97757) for primary actions — matches Claude accent, not generic purple.
+ */
 :root {
-  --background: #ffffff;
-  --foreground: #111827;
+  --background: #f5f2ed;
+  --foreground: #1d1d1b;
   --card: #ffffff;
-  --card-foreground: #111827;
+  --card-foreground: #1d1d1b;
   --popover: #ffffff;
-  --popover-foreground: #111827;
-  --primary: #1e3a5f;
+  --popover-foreground: #1d1d1b;
+  --primary: #d97757;
   --primary-foreground: #ffffff;
-  --secondary: #f3f4f6;
-  --secondary-foreground: #111827;
-  --muted: #f3f4f6;
-  --muted-foreground: #6b7280;
-  --accent: #f3f4f6;
-  --accent-foreground: #111827;
-  --destructive: #dc2626;
-  --border: #e5e7eb;
-  --input: #e5e7eb;
-  --ring: #1e3a5f;
-  --chart-1: #1e3a5f;
-  --chart-2: #2563eb;
-  --chart-3: #059669;
-  --chart-4: #d97706;
-  --chart-5: #6b7280;
-  --radius: 0.625rem;
-  --sidebar: #fafafa;
-  --sidebar-foreground: #111827;
-  --sidebar-primary: #1e3a5f;
+  --secondary: #ebe8e2;
+  --secondary-foreground: #1d1d1b;
+  --muted: #ebe8e2;
+  --muted-foreground: #6b6966;
+  --accent: #e5e1d9;
+  --accent-foreground: #1d1d1b;
+  --destructive: #c53030;
+  --border: #e5e1d9;
+  --input: #ddd9cf;
+  --ring: rgba(217, 119, 87, 0.45);
+  --chart-1: #57534e;
+  --chart-2: #78716c;
+  --chart-3: #65a30d;
+  --chart-4: #b45309;
+  --chart-5: #d97757;
+  --radius: 0.5rem;
+  /* Same as canvas — one continuous field like Claude */
+  --sidebar: #f5f2ed;
+  --sidebar-foreground: #1d1d1b;
+  --sidebar-primary: #d97757;
   --sidebar-primary-foreground: #ffffff;
-  --sidebar-accent: #f3f4f6;
-  --sidebar-accent-foreground: #111827;
-  --sidebar-border: #e5e7eb;
-  --sidebar-ring: #1e3a5f;
+  --sidebar-accent: #ebe8e2;
+  --sidebar-accent-foreground: #1d1d1b;
+  --sidebar-border: #e5e1d9;
+  --sidebar-ring: #d97757;
 }
 
 @layer base {
@@ -88,8 +93,7 @@
     @apply border-border outline-ring/50;
   }
   body {
-    @apply text-foreground;
-    background-color: #ffffff;
+    @apply bg-background text-foreground;
   }
   html {
     @apply font-sans;

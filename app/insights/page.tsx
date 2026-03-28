@@ -27,8 +27,10 @@ import {
   LabelList,
 } from 'recharts'
 
-const GRID_STROKE = '#e5e7eb'
-const TICK_FILL = '#9ca3af'
+const GRID_STROKE = '#e0d8ca'
+const TICK_FILL = '#78716c'
+const CHART_PRIMARY = '#57534e'
+const CHART_SECONDARY = '#65a30d'
 const TICK_FONT_SIZE = 12
 
 interface TooltipPayloadEntry {
@@ -46,10 +48,10 @@ interface CustomTooltipProps {
 function ChartTooltip({ active, label, payload }: CustomTooltipProps) {
   if (!active || !payload || payload.length === 0) return null
   return (
-    <div className="bg-white border border-gray-200 rounded-xl px-3 py-2 text-xs text-gray-900 shadow-lg">
-      {label && <p className="text-gray-500 text-xs mb-1">{label}</p>}
+    <div className="bg-card border border-border rounded-xl px-3 py-2 text-xs text-foreground shadow-lg">
+      {label && <p className="text-muted-foreground text-xs mb-1">{label}</p>}
       {payload.map((entry) => (
-        <p key={entry.name} style={{ color: entry.color ?? '#111827' }}>
+        <p key={entry.name} style={{ color: entry.color ?? '#292524' }}>
           {entry.name}: <span className="font-semibold tabular-nums">{entry.value}</span>
         </p>
       ))}
@@ -59,7 +61,7 @@ function ChartTooltip({ active, label, payload }: CustomTooltipProps) {
 
 function SectionHeading({ children }: { children: React.ReactNode }) {
   return (
-    <h2 className="text-[11px] font-semibold text-gray-400 uppercase tracking-widest mb-4">
+    <h2 className="text-[11px] font-semibold text-muted-foreground uppercase tracking-widest mb-4">
       {children}
     </h2>
   )
@@ -73,12 +75,12 @@ interface StatCardProps {
 
 function StatCard({ label, value, sub }: StatCardProps) {
   return (
-    <div className="flex-1 bg-white border border-gray-200 rounded-2xl p-5 hover:border-gray-300 transition-all duration-200 flex flex-col gap-1 min-w-0">
-      <span className="text-[11px] font-medium text-gray-400 uppercase tracking-wider">
+    <div className="flex-1 bg-card border border-border rounded-2xl p-5 shadow-sm hover:shadow-md transition-all duration-200 flex flex-col gap-1 min-w-0">
+      <span className="text-[11px] font-semibold text-muted-foreground uppercase tracking-wider">
         {label}
       </span>
-      <span className="text-3xl font-bold tabular-nums text-gray-900 mt-1 font-serif">{value}</span>
-      {sub && <span className="text-xs text-gray-400 tabular-nums">{sub}</span>}
+      <span className="text-3xl font-bold tabular-nums text-foreground mt-1">{value}</span>
+      {sub && <span className="text-xs text-muted-foreground tabular-nums">{sub}</span>}
     </div>
   )
 }
@@ -152,7 +154,7 @@ export default function InsightsPage() {
         </div>
 
         {/* Reading Activity */}
-        <div className="bg-white border border-gray-200 rounded-2xl p-5">
+        <div className="bg-card border border-border rounded-2xl p-5 shadow-sm">
           <SectionHeading>Reading Activity — Last 8 Weeks</SectionHeading>
           <ResponsiveContainer width="100%" height={220}>
             <LineChart data={weeklyData} margin={{ top: 4, right: 8, left: -20, bottom: 0 }}>
@@ -174,29 +176,29 @@ export default function InsightsPage() {
                 type="monotone"
                 dataKey="saved"
                 name="Saved"
-                stroke="#1e3a5f"
+                stroke={CHART_PRIMARY}
                 strokeWidth={2}
                 dot={false}
-                activeDot={{ r: 4, fill: '#1e3a5f' }}
+                activeDot={{ r: 4, fill: CHART_PRIMARY }}
               />
               <Line
                 type="monotone"
                 dataKey="finished"
                 name="Finished"
-                stroke="#059669"
+                stroke={CHART_SECONDARY}
                 strokeWidth={2}
                 dot={false}
-                activeDot={{ r: 4, fill: '#059669' }}
+                activeDot={{ r: 4, fill: CHART_SECONDARY }}
               />
             </LineChart>
           </ResponsiveContainer>
           <div className="flex gap-5 mt-3">
-            <span className="flex items-center gap-2 text-xs text-gray-400">
-              <span className="inline-block w-5 h-0.5 rounded" style={{ background: '#1e3a5f' }} />
+            <span className="flex items-center gap-2 text-xs text-muted-foreground">
+              <span className="inline-block w-5 h-0.5 rounded bg-stone-600" />
               Saved
             </span>
-            <span className="flex items-center gap-2 text-xs text-gray-400">
-              <span className="inline-block w-5 h-0.5 bg-emerald-600 rounded" />
+            <span className="flex items-center gap-2 text-xs text-muted-foreground">
+              <span className="inline-block w-5 h-0.5 bg-lime-700 rounded" />
               Finished
             </span>
           </div>
@@ -204,7 +206,7 @@ export default function InsightsPage() {
 
         {/* Unread by Topic */}
         {topicData.length > 0 && (
-          <div className="bg-white border border-gray-200 rounded-2xl p-5">
+          <div className="bg-card border border-border rounded-2xl p-5 shadow-sm">
             <SectionHeading>Unread by Topic</SectionHeading>
             <ResponsiveContainer width="100%" height={Math.max(180, topicData.length * 36)}>
               <BarChart
@@ -231,8 +233,8 @@ export default function InsightsPage() {
                   tickLine={false}
                 />
                 <Tooltip content={<ChartTooltip />} />
-                <Bar dataKey="count" name="Items" fill="#1e3a5f" radius={[0, 4, 4, 0]} barSize={18} minPointSize={4}>
-                  <LabelList dataKey="count" position="right" style={{ fill: '#9ca3af', fontSize: 11 }} />
+                <Bar dataKey="count" name="Items" fill="#a16207" radius={[0, 4, 4, 0]} barSize={18} minPointSize={4}>
+                  <LabelList dataKey="count" position="right" style={{ fill: '#78716c', fontSize: 11 }} />
                 </Bar>
               </BarChart>
             </ResponsiveContainer>
@@ -241,7 +243,7 @@ export default function InsightsPage() {
 
         {/* Unread by Publisher */}
         {publisherData.length > 0 && (
-          <div className="bg-white border border-gray-200 rounded-2xl p-5">
+          <div className="bg-card border border-border rounded-2xl p-5 shadow-sm">
             <SectionHeading>Unread by Publisher</SectionHeading>
             <ResponsiveContainer width="100%" height={Math.max(180, publisherData.length * 36)}>
               <BarChart
@@ -268,8 +270,8 @@ export default function InsightsPage() {
                   tickLine={false}
                 />
                 <Tooltip content={<ChartTooltip />} />
-                <Bar dataKey="count" name="Items" fill="#2563eb" radius={[0, 4, 4, 0]} barSize={18} minPointSize={4}>
-                  <LabelList dataKey="count" position="right" style={{ fill: '#9ca3af', fontSize: 11 }} />
+                <Bar dataKey="count" name="Items" fill="#78716c" radius={[0, 4, 4, 0]} barSize={18} minPointSize={4}>
+                  <LabelList dataKey="count" position="right" style={{ fill: '#78716c', fontSize: 11 }} />
                 </Bar>
               </BarChart>
             </ResponsiveContainer>
@@ -278,18 +280,18 @@ export default function InsightsPage() {
 
         {/* Finish Rate by Publisher */}
         {finishRateData.length > 0 && (
-          <div className="bg-white border border-gray-200 rounded-2xl p-5">
+          <div className="bg-card border border-border rounded-2xl p-5 shadow-sm">
             <SectionHeading>Finish Rate by Publisher</SectionHeading>
             <table className="w-full text-sm">
               <thead>
-                <tr className="border-b border-gray-200">
-                  <th className="text-left text-[11px] text-gray-400 uppercase tracking-widest font-semibold pb-2 pr-4">
+                <tr className="border-b border-border">
+                  <th className="text-left text-[11px] text-muted-foreground uppercase tracking-widest font-semibold pb-2 pr-4">
                     Publisher
                   </th>
-                  <th className="text-left text-[11px] text-gray-400 uppercase tracking-widest font-semibold pb-2 pr-4">
+                  <th className="text-left text-[11px] text-muted-foreground uppercase tracking-widest font-semibold pb-2 pr-4">
                     Saved
                   </th>
-                  <th className="text-right text-[11px] text-gray-400 uppercase tracking-widest font-semibold pb-2">
+                  <th className="text-right text-[11px] text-muted-foreground uppercase tracking-widest font-semibold pb-2">
                     Finish Rate
                   </th>
                 </tr>
@@ -298,18 +300,18 @@ export default function InsightsPage() {
                 {finishRateData.map(({ publisher, rate }) => {
                   const total = allPublisherGroups[publisher]?.length ?? 0
                   return (
-                    <tr key={publisher} className="border-b border-gray-100 last:border-0 hover:bg-gray-50">
-                      <td className="py-2.5 pr-4 text-gray-800 text-sm">{publisher}</td>
-                      <td className="py-2.5 pr-4 text-gray-400 tabular-nums text-sm">{total}</td>
+                    <tr key={publisher} className="border-b border-border/60 last:border-0 hover:bg-muted/50">
+                      <td className="py-2.5 pr-4 text-foreground text-sm">{publisher}</td>
+                      <td className="py-2.5 pr-4 text-muted-foreground tabular-nums text-sm">{total}</td>
                       <td className="py-2.5 text-right">
                         <div className="flex items-center justify-end gap-3">
-                          <div className="w-24 h-1.5 bg-gray-100 rounded-full overflow-hidden">
+                          <div className="w-24 h-1.5 bg-muted rounded-full overflow-hidden">
                             <div
-                              className="h-full bg-emerald-500 rounded-full"
+                              className="h-full bg-lime-700 rounded-full"
                               style={{ width: `${rate}%` }}
                             />
                           </div>
-                          <span className="tabular-nums text-gray-500 w-10 text-right text-xs">
+                          <span className="tabular-nums text-muted-foreground w-10 text-right text-xs">
                             {rate}%
                           </span>
                         </div>
@@ -323,7 +325,7 @@ export default function InsightsPage() {
         )}
 
         {items.length === 0 && (
-          <div className="flex flex-col items-center justify-center h-48 gap-2 text-center text-gray-400">
+          <div className="flex flex-col items-center justify-center h-48 gap-2 text-center text-muted-foreground">
             <p className="text-sm">No data yet. Add some items to see insights.</p>
           </div>
         )}

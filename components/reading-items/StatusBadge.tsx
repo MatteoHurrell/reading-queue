@@ -8,12 +8,12 @@ interface Props {
 }
 
 const STATUS_CLASSES: Record<ReadingStatus, string> = {
-  inbox: 'bg-amber-50 text-amber-700 border border-amber-200',
-  queued: 'bg-blue-50 text-blue-700 border border-blue-200',
-  reading: 'bg-sky-50 text-sky-700 border border-sky-200',
-  finished: 'bg-emerald-50 text-emerald-700 border border-emerald-200',
-  archived: 'bg-gray-50 text-gray-500 border border-gray-200',
-  dropped: 'bg-red-50 text-red-600 border border-red-200',
+  inbox: 'bg-amber-100 text-amber-700 border border-amber-200',
+  queued: 'bg-stone-200/80 text-stone-800 border border-stone-300/70',
+  reading: 'bg-orange-50 text-orange-950 border border-orange-200/80',
+  finished: 'bg-lime-100/90 text-lime-950 border border-lime-200/80',
+  archived: 'bg-muted text-muted-foreground border border-border',
+  dropped: 'bg-red-100 text-red-600 border border-red-200',
 }
 
 export default function StatusBadge({ status }: Props) {

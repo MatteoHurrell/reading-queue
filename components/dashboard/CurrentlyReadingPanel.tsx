@@ -12,13 +12,13 @@ interface Props {
 
 export default function CurrentlyReadingPanel({ items, onTransition }: Props) {
   return (
-    <section className="bg-white border border-gray-200 rounded-2xl p-5">
-      <h2 className="text-[11px] font-semibold text-gray-400 uppercase tracking-widest mb-4">
+    <section className="bg-card border border-border rounded-2xl p-5 shadow-sm">
+      <h2 className="text-[11px] font-semibold text-muted-foreground uppercase tracking-widest mb-4">
         Currently Reading
       </h2>
 
       {items.length === 0 ? (
-        <p className="text-sm text-gray-400">
+        <p className="text-sm text-muted-foreground">
           Nothing in progress. Pick something from your queue.
         </p>
       ) : (
@@ -26,24 +26,24 @@ export default function CurrentlyReadingPanel({ items, onTransition }: Props) {
           {items.map((item) => (
             <div
               key={item.id}
-              className="border-l-2 border-gray-900 pl-4 py-3 flex items-center justify-between bg-gray-50 rounded-r-xl"
+              className="border-l-4 border-stone-400 pl-4 py-2 flex items-center justify-between"
             >
               <div className="flex-1 min-w-0">
                 <a
                   href={item.url}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="text-sm font-medium text-gray-800 hover:text-gray-900 transition-colors flex items-center gap-1.5 group"
+                  className="text-sm font-semibold text-foreground hover:text-stone-700 transition-colors flex items-center gap-1.5 group"
                 >
                   <span className="line-clamp-1">{item.title}</span>
-                  <ExternalLink className="size-3 text-gray-400 group-hover:text-gray-600 flex-shrink-0 transition-colors" />
+                  <ExternalLink className="size-3 text-muted-foreground group-hover:text-stone-600 flex-shrink-0 transition-colors" />
                 </a>
                 <div className="flex items-center gap-2 mt-0.5">
-                  <span className="text-xs text-gray-400">{item.publisher}</span>
+                  <span className="text-xs text-muted-foreground">{item.publisher}</span>
                   {item.estimatedMinutes !== undefined && (
                     <>
-                      <span className="text-gray-300 text-xs">&middot;</span>
-                      <span className="text-xs text-gray-400">
+                      <span className="text-muted-foreground/70 text-xs">&middot;</span>
+                      <span className="text-xs text-muted-foreground">
                         {formatReadTime(item.estimatedMinutes)}
                       </span>
                     </>
@@ -54,14 +54,14 @@ export default function CurrentlyReadingPanel({ items, onTransition }: Props) {
                 <Button
                   size="sm"
                   variant="outline"
-                  className="text-xs h-7 px-3 rounded-lg bg-transparent border-gray-200 text-gray-500 hover:text-gray-700 hover:border-gray-300 transition-all duration-200"
+                  className="bg-muted text-muted-foreground hover:bg-accent hover:text-foreground text-xs h-7 px-3 rounded-lg border-0 transition-colors duration-200"
                   onClick={() => onTransition(item.id, 'queued')}
                 >
                   Back to queue
                 </Button>
                 <Button
                   size="sm"
-                  className="text-xs h-7 px-3 rounded-lg border-0 text-white bg-gray-900 hover:bg-gray-800 transition-all duration-200"
+                  className="text-xs h-7 px-3 rounded-lg border border-transparent text-primary-foreground bg-primary shadow-sm hover:bg-primary/90 transition-colors duration-200"
                   onClick={() => onTransition(item.id, 'finished')}
                 >
                   Mark finished

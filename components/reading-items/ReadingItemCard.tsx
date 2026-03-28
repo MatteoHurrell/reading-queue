@@ -1,8 +1,7 @@
 'use client'
 
 import { useState } from 'react'
-import { Star, MoreHorizontal, ExternalLink, Clock } from 'lucide-react'
-import { motion } from 'framer-motion'
+import { Star, MoreHorizontal, ExternalLink } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import {
   DropdownMenu,
@@ -11,11 +10,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
-import StatusBadge from './StatusBadge'
-import PriorityBadge from './PriorityBadge'
-import TopicBadge from './TopicBadge'
-import SourceTypeBadge from './SourceTypeBadge'
-import { formatRelativeDate, formatReadTime } from '@/lib/formatters'
+import { formatRelativeDate } from '@/lib/formatters'
 import { cn } from '@/lib/utils'
 import type { ReadingItem, ReadingStatus } from '@/lib/types'
 
@@ -25,14 +20,14 @@ interface Props {
   onDelete: (id: string) => void
   onTransition: (id: string, status: ReadingStatus) => void
   onToggleFavorite: (id: string) => void
-  /** Nested inside inbox panel (no outer radius on bottom) */
-  variant?: 'standalone' | 'embedded'
 }
 
-function excerptText(item: ReadingItem): string | undefined {
-  if (item.previewDescription?.trim()) return item.previewDescription.trim()
-  if (item.whySaved?.trim()) return item.whySaved.trim()
-  return undefined
+function getDomain(url: string): string {
+  try {
+    return new URL(url).hostname.replace(/^www\./, '')
+  } catch {
+    return ''
+  }
 }
 
 export default function ReadingItemCard({
@@ -41,106 +36,71 @@ export default function ReadingItemCard({
   onDelete,
   onTransition,
   onToggleFavorite,
-  variant = 'standalone',
 }: Props) {
   const [imageFailed, setImageFailed] = useState(false)
-  const excerpt = excerptText(item)
   const showImage = Boolean(item.previewImageUrl) && !imageFailed
-
-  const shellClass =
-    variant === 'embedded'
-      ? 'rounded-t-2xl bg-white overflow-hidden'
-      : 'rounded-2xl bg-white border border-gray-200 shadow-sm hover:shadow-lg hover:border-gray-300/90 overflow-hidden'
+  const domain = getDomain(item.url)
 
   return (
-    <motion.div
-      whileHover={variant === 'standalone' ? { y: -2 } : { y: 0 }}
-      transition={{ duration: 0.18 }}
-      className={cn(shellClass, 'transition-[box-shadow,border-color] duration-300')}
-    >
-      <div className="flex flex-col sm:flex-row sm:min-h-[200px]">
-        {/* Preview image — Ramp-style visual anchor */}
-        <div
-          className={cn(
-            'relative shrink-0 bg-gradient-to-br from-slate-100 via-slate-50 to-zinc-100',
-            'aspect-[16/10] sm:aspect-auto sm:w-[min(44%,280px)] sm:min-h-[200px]'
-          )}
+    <div className="group bg-card border border-border rounded-2xl overflow-hidden hover:shadow-md hover:border-stone-300/80 transition-all duration-200">
+      {showImage ? (
+        <a
+          href={item.url}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="block aspect-[2/1] bg-muted/50 overflow-hidden"
         >
-          {showImage ? (
-            <img
-              src={item.previewImageUrl}
-              alt=""
-              className="absolute inset-0 size-full object-cover"
-              onError={() => setImageFailed(true)}
-            />
-          ) : (
-            <div className="absolute inset-0 flex items-center justify-center p-6">
-              <span className="text-4xl font-semibold tabular-nums text-slate-300/90 select-none">
-                {item.title.slice(0, 1).toUpperCase()}
-              </span>
-            </div>
-          )}
-          <div className="absolute inset-0 bg-gradient-to-t from-black/25 via-transparent to-transparent pointer-events-none sm:bg-gradient-to-r sm:from-transparent sm:via-transparent sm:to-black/10" />
+          <img
+            src={item.previewImageUrl}
+            alt=""
+            className="size-full object-cover"
+            onError={() => setImageFailed(true)}
+          />
+        </a>
+      ) : (
+        <a
+          href={item.url}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="block aspect-[2/1] bg-muted flex items-center justify-center"
+        >
+          <span className="text-3xl font-semibold text-stone-300 select-none">
+            {item.title.slice(0, 1).toUpperCase()}
+          </span>
+        </a>
+      )}
 
-          <button
-            type="button"
-            onClick={() => onToggleFavorite(item.id)}
-            className={cn(
-              'absolute top-2.5 right-2.5 p-1.5 rounded-lg backdrop-blur-md transition-colors',
-              item.isFavorite
-                ? 'bg-amber-400/90 text-amber-950 shadow-sm'
-                : 'bg-white/80 text-slate-500 hover:text-amber-600 shadow-sm'
-            )}
-            aria-label={item.isFavorite ? 'Remove from favorites' : 'Add to favorites'}
-          >
-            <Star className="size-4" fill={item.isFavorite ? 'currentColor' : 'none'} />
-          </button>
-        </div>
+      <div className="p-3.5 space-y-2">
+        <a
+          href={item.url}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="text-sm font-semibold text-foreground leading-snug line-clamp-2 hover:text-stone-700 transition-colors block"
+        >
+          {item.title}
+        </a>
 
-        {/* Body */}
-        <div className="flex flex-col flex-1 min-w-0 p-4 sm:p-5 gap-3">
-          <div className="flex-1 min-w-0 space-y-2">
-            <a
-              href={item.url}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="text-[0.95rem] sm:text-base font-semibold text-slate-900 leading-snug line-clamp-2 hover:text-indigo-600 transition-colors"
+        <div className="flex items-center justify-between gap-2">
+          <span className="text-xs text-muted-foreground truncate">
+            {item.publisher || domain}
+            {' · '}
+            {formatRelativeDate(item.createdAt)}
+          </span>
+
+          <div className="flex items-center gap-0.5 shrink-0">
+            <button
+              type="button"
+              onClick={() => onToggleFavorite(item.id)}
+              className={cn(
+                'p-1 rounded-md transition-colors',
+                item.isFavorite
+                  ? 'text-amber-400'
+                  : 'text-muted-foreground/50 opacity-0 group-hover:opacity-100 hover:text-muted-foreground'
+              )}
+              aria-label={item.isFavorite ? 'Remove from favorites' : 'Add to favorites'}
             >
-              {item.title}
-            </a>
-            <div className="flex flex-wrap items-center gap-x-1.5 gap-y-0.5 text-xs text-slate-500">
-              <span>{item.publisher}</span>
-              {item.author && item.author !== item.publisher && (
-                <>
-                  <span className="text-slate-300">·</span>
-                  <span>{item.author}</span>
-                </>
-              )}
-            </div>
-            {excerpt && (
-              <p className="text-sm text-slate-600 leading-relaxed line-clamp-3">{excerpt}</p>
-            )}
-          </div>
-
-          <div className="flex flex-wrap items-center gap-1.5">
-            <SourceTypeBadge sourceType={item.sourceType} />
-            <TopicBadge topic={item.topic} />
-            <PriorityBadge priority={item.priority} />
-            <StatusBadge status={item.status} />
-          </div>
-
-          <div className="flex items-center justify-between gap-2 pt-1 border-t border-slate-100">
-            <div className="flex items-center gap-3 min-w-0 text-xs text-slate-400">
-              {item.estimatedMinutes !== undefined && (
-                <span className="flex items-center gap-1 tabular-nums shrink-0">
-                  <Clock className="size-3.5 flex-shrink-0" />
-                  {formatReadTime(item.estimatedMinutes)}
-                </span>
-              )}
-              <span className="truncate hidden sm:inline">
-                Added {formatRelativeDate(item.createdAt)}
-              </span>
-            </div>
+              <Star className="size-3.5" fill={item.isFavorite ? 'currentColor' : 'none'} />
+            </button>
 
             <DropdownMenu>
               <DropdownMenuTrigger
@@ -148,44 +108,39 @@ export default function ReadingItemCard({
                   <Button
                     variant="ghost"
                     size="icon-sm"
-                    className="text-slate-400 hover:text-slate-800 hover:bg-slate-100 shrink-0"
+                    className="size-6 text-muted-foreground/50 opacity-0 group-hover:opacity-100 hover:text-muted-foreground hover:bg-muted"
                     aria-label="More actions"
                   />
                 }
               >
-                <MoreHorizontal className="size-4" />
+                <MoreHorizontal className="size-3.5" />
               </DropdownMenuTrigger>
-              <DropdownMenuContent align="end" className="min-w-44">
+              <DropdownMenuContent align="end" className="min-w-36">
                 <DropdownMenuItem
                   onClick={() => window.open(item.url, '_blank', 'noopener,noreferrer')}
                 >
-                  <ExternalLink className="size-4" />
-                  Open article
+                  <ExternalLink className="size-3.5" />
+                  Open
                 </DropdownMenuItem>
                 <DropdownMenuSeparator />
-                {item.status === 'queued' && (
-                  <DropdownMenuItem onClick={() => onTransition(item.id, 'reading')}>
-                    Mark as reading
-                  </DropdownMenuItem>
-                )}
-                {(item.status === 'reading' || item.status === 'queued') && (
-                  <DropdownMenuItem onClick={() => onTransition(item.id, 'finished')}>
-                    Mark as finished
-                  </DropdownMenuItem>
-                )}
-                {(item.status === 'inbox' || item.status === 'archived') && (
+                {item.status === 'inbox' && (
                   <DropdownMenuItem onClick={() => onTransition(item.id, 'queued')}>
                     Move to queue
                   </DropdownMenuItem>
                 )}
-                {(item.status === 'finished' || item.status === 'queued') && (
-                  <DropdownMenuItem onClick={() => onTransition(item.id, 'archived')}>
-                    Archive
+                {item.status === 'queued' && (
+                  <DropdownMenuItem onClick={() => onTransition(item.id, 'reading')}>
+                    Start reading
                   </DropdownMenuItem>
                 )}
-                {(item.status === 'inbox' || item.status === 'queued') && (
-                  <DropdownMenuItem onClick={() => onTransition(item.id, 'dropped')}>
-                    Drop
+                {(item.status === 'reading' || item.status === 'queued') && (
+                  <DropdownMenuItem onClick={() => onTransition(item.id, 'finished')}>
+                    Mark finished
+                  </DropdownMenuItem>
+                )}
+                {item.status !== 'archived' && item.status !== 'dropped' && (
+                  <DropdownMenuItem onClick={() => onTransition(item.id, 'archived')}>
+                    Archive
                   </DropdownMenuItem>
                 )}
                 <DropdownMenuSeparator />
@@ -201,6 +156,6 @@ export default function ReadingItemCard({
           </div>
         </div>
       </div>
-    </motion.div>
+    </div>
   )
 }

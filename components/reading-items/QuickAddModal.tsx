@@ -11,24 +11,12 @@ import {
 } from '@/components/ui/dialog'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
-import { Textarea } from '@/components/ui/textarea'
+import type { ReadingItem } from '@/lib/types'
 import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select'
-import {
-  PUBLISHERS,
-  TOPICS,
-  TOPIC_LABELS,
-  SOURCE_TYPES,
-  SOURCE_TYPE_LABELS,
-  PRIORITY_LABELS,
-} from '@/lib/constants'
-import type { ReadingItem, Topic, SourceType, Priority } from '@/lib/types'
-import { isLikelySocialThreadUrl } from '@/lib/link-preview'
+  isLikelySocialThreadUrl,
+  deriveTitleFromUrl,
+  derivePublisherFromUrl,
+} from '@/lib/link-preview'
 import type { LinkPreviewResult } from '@/lib/link-preview'
 
 interface Props {
@@ -40,39 +28,22 @@ interface Props {
 
 interface FormState {
   url: string
-  title: string
-  publisher: string
-  topic: Topic
-  sourceType: SourceType
-  priority: Priority
-  estimatedMinutes: string
-  whySaved: string
-}
-
-const EMPTY_FORM: FormState = {
-  url: '',
-  title: '',
-  publisher: '',
-  topic: 'other',
-  sourceType: 'other',
-  priority: 'medium',
-  estimatedMinutes: '',
-  whySaved: '',
 }
 
 const inputClass =
-  'bg-gray-50 border border-gray-200 rounded-xl text-sm text-gray-900 placeholder:text-gray-300 focus:border-gray-400 focus:ring-0 h-9 px-3'
-
-const labelClass = 'text-xs font-medium text-gray-500 uppercase tracking-wider mb-1.5'
+  'bg-card border border-border rounded-xl text-sm text-foreground placeholder:text-muted-foreground focus:border-stone-500 focus:ring-2 focus:ring-stone-500/10 h-9 px-3'
 
 export default function QuickAddModal({ open, onClose, onAdd, existingItems = [] }: Props) {
-  const [form, setForm] = useState<FormState>(EMPTY_FORM)
-  const [errors, setErrors] = useState<{ url?: string; title?: string }>({})
+  const [form, setForm] = useState<FormState>({ url: '' })
+  const [errors, setErrors] = useState<{ url?: string }>({})
   const [previewMeta, setPreviewMeta] = useState<{
+    title?: string
     imageUrl?: string
     description?: string
+    siteName?: string
   }>({})
   const [previewLoading, setPreviewLoading] = useState(false)
+  const [saveLoading, setSaveLoading] = useState(false)
   const previewAbortRef = useRef<AbortController | null>(null)
   const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null)
 
@@ -84,10 +55,11 @@ export default function QuickAddModal({ open, onClose, onAdd, existingItems = []
 
   useEffect(() => {
     if (open) {
-      setForm(EMPTY_FORM)
+      setForm({ url: '' })
       setErrors({})
       setPreviewMeta({})
       setPreviewLoading(false)
+      setSaveLoading(false)
     }
   }, [open])
 
@@ -116,20 +88,10 @@ export default function QuickAddModal({ open, onClose, onAdd, existingItems = []
         .then((data) => {
           if (ac.signal.aborted) return
           setPreviewMeta({
+            title: data.title?.trim() || undefined,
             imageUrl: data.imageUrl,
             description: data.description,
-          })
-          setForm((prev) => {
-            const next = { ...prev }
-            if (!prev.title.trim() && data.title?.trim()) next.title = data.title.trim()
-            if (!prev.publisher.trim()) {
-              if (data.siteName?.trim()) next.publisher = data.siteName.trim()
-              else if (isLikelySocialThreadUrl(url)) next.publisher = 'X'
-            }
-            if (isLikelySocialThreadUrl(url) && prev.sourceType === 'other') {
-              next.sourceType = 'thread'
-            }
-            return next
+            siteName: data.siteName?.trim(),
           })
         })
         .catch(() => {
@@ -149,230 +111,152 @@ export default function QuickAddModal({ open, onClose, onAdd, existingItems = []
 
   function setField<K extends keyof FormState>(key: K, value: FormState[K]) {
     setForm((prev) => ({ ...prev, [key]: value }))
-    if (key === 'url' || key === 'title') {
-      setErrors((prev) => ({ ...prev, [key]: undefined }))
-    }
+    if (key === 'url') setErrors((prev) => ({ ...prev, url: undefined }))
   }
 
-  const handleSubmit = useCallback(() => {
-    const newErrors: { url?: string; title?: string } = {}
-    if (!form.url.trim()) newErrors.url = 'URL is required'
-    if (!form.title.trim()) newErrors.title = 'Title is required'
+  const displayTitleHint =
+    previewMeta.title ||
+    (form.url.trim() && /^https?:\/\//i.test(form.url.trim())
+      ? deriveTitleFromUrl(form.url.trim())
+      : undefined)
+
+  const handleSubmit = useCallback(async () => {
+    const href = form.url.trim()
+    const newErrors: { url?: string } = {}
+    if (!href) newErrors.url = 'URL is required'
     if (Object.keys(newErrors).length > 0) {
       setErrors(newErrors)
       return
     }
 
-    onAdd({
-      url: form.url.trim(),
-      title: form.title.trim(),
-      publisher: form.publisher.trim() || 'Other',
-      topic: form.topic,
-      sourceType: form.sourceType,
-      priority: form.priority,
-      estimatedMinutes: form.estimatedMinutes ? Number(form.estimatedMinutes) : undefined,
-      whySaved: form.whySaved.trim() || undefined,
-      status: 'inbox',
-      isFavorite: false,
-      tags: [],
-      previewImageUrl: previewMeta.imageUrl,
-      previewDescription: previewMeta.description,
-    })
-    onClose()
-  }, [form, onAdd, onClose, previewMeta])
+    setSaveLoading(true)
+    try {
+      let title = previewMeta.title?.trim()
+      let publisher =
+        previewMeta.siteName?.trim() ||
+        (isLikelySocialThreadUrl(href) ? 'X' : derivePublisherFromUrl(href))
+      let imageUrl = previewMeta.imageUrl
+      let description = previewMeta.description
+
+      if (!title) {
+        try {
+          const res = await fetch(`/api/link-preview?url=${encodeURIComponent(href)}`)
+          const data = (await res.json()) as LinkPreviewResult
+          title = data.title?.trim()
+          if (data.siteName?.trim()) publisher = data.siteName.trim()
+          else if (isLikelySocialThreadUrl(href)) publisher = 'X'
+          imageUrl = data.imageUrl ?? imageUrl
+          description = data.description ?? description
+        } catch {
+          /* use fallbacks below */
+        }
+      }
+
+      const resolvedTitle = title?.trim() || deriveTitleFromUrl(href)
+
+      onAdd({
+        url: href,
+        title: resolvedTitle,
+        publisher: publisher.trim() || 'Other',
+        topic: 'other',
+        sourceType: 'other',
+        priority: 'medium',
+        status: 'inbox',
+        isFavorite: false,
+        tags: [],
+        previewImageUrl: imageUrl,
+        previewDescription: description,
+      })
+      onClose()
+    } finally {
+      setSaveLoading(false)
+    }
+  }, [form.url, onAdd, onClose, previewMeta])
 
   function handleKeyDown(e: React.KeyboardEvent) {
     if ((e.ctrlKey || e.metaKey) && e.key === 'Enter') {
       e.preventDefault()
-      handleSubmit()
+      void handleSubmit()
     }
   }
 
   return (
     <Dialog open={open} onOpenChange={(isOpen) => { if (!isOpen) onClose() }}>
       <DialogContent
-        className="sm:max-w-lg bg-white border border-gray-200 rounded-2xl shadow-lg"
+        className="sm:max-w-md bg-card border border-border rounded-2xl shadow-xl"
         onKeyDown={handleKeyDown}
       >
         <DialogHeader>
-          <DialogTitle className="text-lg font-semibold text-gray-900 font-serif">Add to Reading Queue</DialogTitle>
+          <DialogTitle className="text-lg font-semibold text-foreground">
+            Save bookmark
+          </DialogTitle>
+          <p className="text-xs text-muted-foreground font-normal leading-snug pr-6">
+            Paste the link — we pull the title from the page automatically.
+          </p>
         </DialogHeader>
 
-        <div className="flex flex-col gap-4 py-1">
-          {/* URL */}
+        <div className="flex flex-col gap-3 py-1">
           <div className="flex flex-col gap-1">
-            <label className={labelClass}>
-              URL <span className="text-blue-600">*</span>
-            </label>
             <Input
               type="url"
-              placeholder="https://..."
+              placeholder="URL"
               value={form.url}
               onChange={(e) => setField('url', e.target.value)}
               className={`${inputClass} ${errors.url ? 'border-red-400' : ''}`}
             />
             {errors.url && <p className="text-xs text-red-500">{errors.url}</p>}
             {previewLoading && form.url.trim() && (
-              <p className="text-xs text-gray-500 flex items-center gap-1.5 mt-1.5">
-                <Loader2 className="size-3.5 animate-spin shrink-0" aria-hidden />
-                Pulling title, image, and excerpt…
+              <p className="text-xs text-muted-foreground flex items-center gap-1.5 mt-1">
+                <Loader2 className="size-3 animate-spin shrink-0" aria-hidden />
+                Fetching preview...
               </p>
             )}
-            {!previewLoading && previewMeta.description && (
-              <p className="text-xs text-gray-600 line-clamp-2 mt-1.5 leading-relaxed">
-                {previewMeta.description}
+            {!previewLoading && displayTitleHint && (
+              <p className="text-xs text-foreground/80 mt-1 line-clamp-2" title={displayTitleHint}>
+                <span className="text-muted-foreground">Title · </span>
+                {displayTitleHint}
+                {!previewMeta.title && (
+                  <span className="text-muted-foreground"> — from link</span>
+                )}
               </p>
             )}
             {!previewLoading && previewMeta.imageUrl && (
               <img
                 src={previewMeta.imageUrl}
                 alt=""
-                className="mt-2 w-full max-h-28 rounded-xl object-cover border border-gray-200"
+                className="mt-1.5 w-full max-h-24 rounded-xl object-cover border border-border"
               />
             )}
             {!errors.url && duplicateItem && (
               <p className="text-xs text-amber-700 bg-amber-50 border border-amber-200 rounded-xl px-2.5 py-1.5">
-                This URL is already in your queue &mdash;{' '}
-                <span className="font-medium">{duplicateItem.title}</span>
+                Already saved: {duplicateItem.title}
               </p>
             )}
           </div>
 
-          {/* Title */}
-          <div className="flex flex-col gap-1">
-            <label className={labelClass}>
-              Title <span className="text-blue-600">*</span>
-            </label>
-            <Input
-              type="text"
-              placeholder="Article title"
-              value={form.title}
-              onChange={(e) => setField('title', e.target.value)}
-              className={`${inputClass} ${errors.title ? 'border-red-400' : ''}`}
-            />
-            {errors.title && <p className="text-xs text-red-500">{errors.title}</p>}
-          </div>
-
-          {/* Publisher */}
-          <div className="flex flex-col gap-1">
-            <label className={labelClass}>Publisher</label>
-            <Input
-              type="text"
-              placeholder="Publisher name"
-              list="publishers-list"
-              value={form.publisher}
-              onChange={(e) => setField('publisher', e.target.value)}
-              className={inputClass}
-            />
-            <datalist id="publishers-list">
-              {PUBLISHERS.map((p) => (
-                <option key={p} value={p} />
-              ))}
-            </datalist>
-          </div>
-
-          {/* Topic + Source Type row */}
-          <div className="grid grid-cols-2 gap-3">
-            <div className="flex flex-col gap-1">
-              <label className={labelClass}>Topic</label>
-              <Select
-                value={form.topic}
-                onValueChange={(val) => setField('topic', val as Topic)}
-              >
-                <SelectTrigger className="w-full bg-gray-50 border border-gray-200 rounded-xl text-sm text-gray-900 h-9">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  {TOPICS.map((t) => (
-                    <SelectItem key={t} value={t}>
-                      {TOPIC_LABELS[t]}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-
-            <div className="flex flex-col gap-1">
-              <label className={labelClass}>Source type</label>
-              <Select
-                value={form.sourceType}
-                onValueChange={(val) => setField('sourceType', val as SourceType)}
-              >
-                <SelectTrigger className="w-full bg-gray-50 border border-gray-200 rounded-xl text-sm text-gray-900 h-9">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  {SOURCE_TYPES.map((s) => (
-                    <SelectItem key={s} value={s}>
-                      {SOURCE_TYPE_LABELS[s]}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-          </div>
-
-          {/* Priority + Est. time row */}
-          <div className="grid grid-cols-2 gap-3">
-            <div className="flex flex-col gap-1">
-              <label className={labelClass}>Priority</label>
-              <Select
-                value={form.priority}
-                onValueChange={(val) => setField('priority', val as Priority)}
-              >
-                <SelectTrigger className="w-full bg-gray-50 border border-gray-200 rounded-xl text-sm text-gray-900 h-9">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  {(['high', 'medium', 'low'] as Priority[]).map((p) => (
-                    <SelectItem key={p} value={p}>
-                      {PRIORITY_LABELS[p]}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-
-            <div className="flex flex-col gap-1">
-              <label className={labelClass}>
-                Est. read time (min)
-              </label>
-              <Input
-                type="number"
-                min="1"
-                placeholder="e.g. 10"
-                value={form.estimatedMinutes}
-                onChange={(e) => setField('estimatedMinutes', e.target.value)}
-                className={inputClass}
-              />
-            </div>
-          </div>
-
-          {/* Why saved */}
-          <div className="flex flex-col gap-1">
-            <label className={labelClass}>Why saved</label>
-            <Textarea
-              placeholder="Why is this worth reading?"
-              value={form.whySaved}
-              onChange={(e) => setField('whySaved', e.target.value)}
-              className="bg-gray-50 border border-gray-200 rounded-xl text-sm text-gray-900 placeholder:text-gray-300 focus:border-gray-400 focus:ring-0 min-h-[70px] resize-none px-3 py-2"
-            />
-          </div>
         </div>
 
         <DialogFooter>
           <Button
             variant="outline"
             onClick={onClose}
-            className="bg-white border border-gray-200 text-gray-600 hover:text-gray-900 rounded-xl"
+            className="bg-muted/50 border border-border text-muted-foreground hover:bg-muted rounded-xl"
           >
             Cancel
           </Button>
           <Button
-            onClick={handleSubmit}
-            className="bg-gray-900 hover:bg-gray-800 text-white font-medium rounded-xl border-0"
+            onClick={() => { void handleSubmit() }}
+            disabled={saveLoading}
+            className="inline-flex items-center justify-center bg-primary text-primary-foreground font-medium rounded-xl border-0 shadow-sm hover:bg-primary/90 transition-colors"
           >
-            Add to queue
+            {saveLoading ? (
+              <>
+                <Loader2 className="size-4 animate-spin mr-2" aria-hidden />
+                Saving…
+              </>
+            ) : (
+              'Save'
+            )}
           </Button>
         </DialogFooter>
       </DialogContent>

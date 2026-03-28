@@ -1,23 +1,13 @@
 'use client'
 
-import { useState } from 'react'
-import Link from 'next/link'
-import { BookOpen } from 'lucide-react'
+import { useState, useMemo } from 'react'
+import { BookOpen, Search, X } from 'lucide-react'
 import AppShell from '@/components/layout/AppShell'
 import { useReadingItems } from '@/hooks/use-reading-items'
+import ReadingItemCard from '@/components/reading-items/ReadingItemCard'
 import EditItemModal from '@/components/reading-items/EditItemModal'
 import ConfirmDeleteDialog from '@/components/reading-items/ConfirmDeleteDialog'
-import SummaryStats from '@/components/dashboard/SummaryStats'
-import CurrentlyReadingPanel from '@/components/dashboard/CurrentlyReadingPanel'
-import RecommendedReads from '@/components/dashboard/RecommendedReads'
-import QuickWinsPanel from '@/components/dashboard/QuickWinsPanel'
-import NeglectedItemsPanel from '@/components/dashboard/NeglectedItemsPanel'
-import TopicBreakdownPanel from '@/components/dashboard/TopicBreakdownPanel'
-import RecentCompletionsPanel from '@/components/dashboard/RecentCompletionsPanel'
 import EmptyState from '@/components/shared/EmptyState'
-import { getCurrentlyReading, getQueuedItems, getNeglectedItems, getQuickReads, getInboxItems } from '@/lib/selectors'
-import { getRecommendedReads } from '@/lib/recommendations'
-import { QUICK_READ_MAX_MINUTES, NEGLECT_THRESHOLD_DAYS } from '@/lib/constants'
 import type { ReadingItem } from '@/lib/types'
 
 export default function DashboardPage() {
@@ -25,105 +15,83 @@ export default function DashboardPage() {
 
   const [editItem, setEditItem] = useState<ReadingItem | null>(null)
   const [deleteId, setDeleteId] = useState<string | null>(null)
+  const [searchQuery, setSearchQuery] = useState('')
 
-  const currentlyReading = getCurrentlyReading(items)
-  const recommended = getRecommendedReads(items)
-  const quickReads = getQuickReads(items, QUICK_READ_MAX_MINUTES).slice(0, 4)
-  const neglected = getNeglectedItems(items, NEGLECT_THRESHOLD_DAYS).slice(0, 5)
-  const queuedItems = getQueuedItems(items)
-  const inboxItems = getInboxItems(items)
+  const activeItems = useMemo(() => {
+    let result = items.filter(
+      (i) => i.status === 'inbox' || i.status === 'queued' || i.status === 'reading'
+    )
+    if (searchQuery.trim()) {
+      const q = searchQuery.trim().toLowerCase()
+      result = result.filter(
+        (i) =>
+          i.title.toLowerCase().includes(q) ||
+          i.publisher.toLowerCase().includes(q) ||
+          (i.author?.toLowerCase().includes(q) ?? false)
+      )
+    }
+    return result.sort(
+      (a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
+    )
+  }, [items, searchQuery])
 
   const deleteTarget = deleteId ? items.find((i) => i.id === deleteId) : null
 
-  const isCompletelyEmpty = items.length === 0
-
-  function handleEdit(item: ReadingItem) {
-    setEditItem(item)
-  }
-
-  function handleDelete(id: string) {
-    setDeleteId(id)
-  }
-
-  function handleConfirmDelete() {
-    if (deleteId) {
-      deleteItem(deleteId)
-      setDeleteId(null)
-    }
-  }
-
   return (
-    <AppShell pageTitle="Dashboard">
-      {isCompletelyEmpty ? (
+    <AppShell pageTitle="Bookmarks" showHeaderAdd>
+      {items.length === 0 ? (
         <div className="flex items-center justify-center min-h-[60vh]">
           <EmptyState
             icon={<BookOpen className="size-5" />}
-            heading="Welcome to Reading Queue"
+            heading="No bookmarks yet"
             subtext="Save your first article to get started."
           />
         </div>
       ) : (
-        <div className="max-w-5xl mx-auto px-6 py-6 space-y-4">
-          {/* Inbox triage banner */}
-          {inboxItems.length > 0 && (
-            <div className="bg-amber-50 border border-amber-200 rounded-2xl px-5 py-3.5 flex items-center justify-between">
-              <span className="text-sm text-amber-900">
-                You have{' '}
-                <span className="font-semibold text-amber-800">
-                  {inboxItems.length} {inboxItems.length === 1 ? 'item' : 'items'}
-                </span>{' '}
-                in your inbox to triage
-              </span>
-              <Link
-                href="/inbox"
-                className="text-amber-700 hover:text-amber-900 text-sm font-medium transition-colors"
+        <div className="max-w-3xl mx-auto space-y-4">
+          <div className="relative">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 size-3.5 text-muted-foreground pointer-events-none" />
+            <input
+              type="text"
+              placeholder="Search bookmarks..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="w-full h-9 bg-card border border-border rounded-lg pl-9 pr-9 text-sm text-foreground placeholder:text-muted-foreground outline-none focus:border-stone-500 focus:ring-1 focus:ring-stone-500/15 transition-colors"
+            />
+            {searchQuery && (
+              <button
+                onClick={() => setSearchQuery('')}
+                className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
+                aria-label="Clear search"
               >
-                Go to Inbox &rarr;
-              </Link>
-            </div>
-          )}
-
-          {/* Section 1 — Summary stats */}
-          <SummaryStats items={items} />
-
-          {/* Section 2 — Currently Reading */}
-          <CurrentlyReadingPanel
-            items={currentlyReading}
-            onTransition={transitionStatus}
-          />
-
-          {/* Section 3 — Recommended Next Reads */}
-          <RecommendedReads
-            items={recommended}
-            onEdit={handleEdit}
-            onDelete={handleDelete}
-            onTransition={transitionStatus}
-            onToggleFavorite={toggleFavorite}
-          />
-
-          {/* Section 4 + 5 — Quick Wins + Neglected (side by side on larger screens) */}
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-            <QuickWinsPanel
-              items={quickReads}
-              onEdit={handleEdit}
-              onDelete={handleDelete}
-              onTransition={transitionStatus}
-              onToggleFavorite={toggleFavorite}
-            />
-            <NeglectedItemsPanel
-              items={neglected}
-              onTransition={transitionStatus}
-            />
+                <X className="size-3.5" />
+              </button>
+            )}
           </div>
 
-          {/* Section 6 — Topic Snapshot */}
-          <TopicBreakdownPanel items={queuedItems} />
+          <p className="text-xs text-muted-foreground">
+            {activeItems.length} {activeItems.length === 1 ? 'bookmark' : 'bookmarks'}
+          </p>
 
-          {/* Section 7 — Recent Completions */}
-          <RecentCompletionsPanel
-            items={items}
-            onToggleFavorite={toggleFavorite}
-          />
+          {activeItems.length === 0 && searchQuery ? (
+            <EmptyState
+              heading="No results"
+              subtext="Try a different search term."
+            />
+          ) : (
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              {activeItems.map((item) => (
+                <ReadingItemCard
+                  key={item.id}
+                  item={item}
+                  onEdit={setEditItem}
+                  onDelete={setDeleteId}
+                  onTransition={transitionStatus}
+                  onToggleFavorite={toggleFavorite}
+                />
+              ))}
+            </div>
+          )}
         </div>
       )}
 
@@ -137,7 +105,12 @@ export default function DashboardPage() {
       <ConfirmDeleteDialog
         open={deleteTarget !== null}
         itemTitle={deleteTarget?.title ?? ''}
-        onConfirm={handleConfirmDelete}
+        onConfirm={() => {
+          if (deleteId) {
+            deleteItem(deleteId)
+            setDeleteId(null)
+          }
+        }}
         onCancel={() => setDeleteId(null)}
       />
     </AppShell>

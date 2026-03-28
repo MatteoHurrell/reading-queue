@@ -22,3 +22,33 @@ export function isLikelySocialThreadUrl(url: string): boolean {
     return false
   }
 }
+
+/** Readable label when Open Graph or the HTML title tag could not be fetched */
+export function deriveTitleFromUrl(url: string): string {
+  try {
+    const u = new URL(url)
+    const host = u.hostname.replace(/^www\./i, '') || 'Bookmark'
+    const segments = u.pathname.split('/').filter(Boolean)
+    const slug = segments.length ? segments[segments.length - 1] : ''
+    const base = slug
+      ? decodeURIComponent(slug.replace(/\.(html?|php|aspx?)$/i, ''))
+          .replace(/[-_+]/g, ' ')
+          .trim()
+      : ''
+    if (base.length >= 2) {
+      const title = base.length <= 120 ? base : `${base.slice(0, 117)}…`
+      return title.replace(/\s+/g, ' ')
+    }
+    return host
+  } catch {
+    return 'Bookmark'
+  }
+}
+
+export function derivePublisherFromUrl(url: string): string {
+  try {
+    return new URL(url).hostname.replace(/^www\./i, '') || 'Other'
+  } catch {
+    return 'Other'
+  }
+}

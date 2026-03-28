@@ -2,15 +2,7 @@
 
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
-import {
-  LayoutDashboard,
-  Inbox,
-  BookOpen,
-  Archive,
-  BarChart2,
-  Settings,
-  BookMarked,
-} from 'lucide-react'
+import { Bookmark, Archive, Settings, BookMarked } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import type { LucideIcon } from 'lucide-react'
 
@@ -18,45 +10,31 @@ interface NavItem {
   label: string
   href: string
   icon: LucideIcon
-  badge?: number
-  badgeType?: 'inbox' | 'queue'
 }
 
-interface SidebarNavProps {
-  inboxCount: number
-  queuedCount: number
-}
-
-export default function SidebarNav({ inboxCount, queuedCount }: SidebarNavProps) {
+export default function SidebarNav() {
   const pathname = usePathname()
 
   const navItems: NavItem[] = [
-    { label: 'Dashboard', href: '/', icon: LayoutDashboard },
-    { label: 'Inbox', href: '/inbox', icon: Inbox, badge: inboxCount, badgeType: 'inbox' },
-    { label: 'Queue', href: '/queue', icon: BookOpen, badge: queuedCount, badgeType: 'queue' },
-    { label: 'Library', href: '/library', icon: Archive },
-    { label: 'Insights', href: '/insights', icon: BarChart2 },
+    { label: 'Bookmarks', href: '/', icon: Bookmark },
+    { label: 'Archive', href: '/library', icon: Archive },
     { label: 'Settings', href: '/settings', icon: Settings },
   ]
 
   return (
-    <aside className="hidden md:flex fixed top-0 left-0 h-full w-56 flex-col z-40 border-r border-gray-200 bg-white">
-      {/* App header */}
-      <div className="px-4 py-5 border-b border-gray-100 flex items-center gap-2.5">
-        <div className="w-6 h-6 rounded-md flex items-center justify-center flex-shrink-0 bg-gray-900">
-          <BookMarked className="size-3 text-white" />
+    <aside className="hidden md:flex fixed top-0 left-0 h-full w-56 flex-col z-40 border-r border-border bg-background">
+      <div className="px-4 py-5 border-b border-border flex items-center gap-2.5">
+        <div className="w-6 h-6 rounded-md flex items-center justify-center flex-shrink-0 bg-primary">
+          <BookMarked className="size-3 text-primary-foreground" />
         </div>
-        <div className="flex flex-col min-w-0">
-          <span className="text-sm font-semibold leading-tight text-gray-900 font-serif select-none">
+        <div className="flex flex-col leading-tight">
+          <span className="text-sm font-bold text-foreground select-none">
             Reading Queue
           </span>
-          <span className="text-[10px] text-gray-400 uppercase tracking-widest leading-tight mt-0.5 select-none">
-            Personal
-          </span>
+          <span className="text-[10px] text-muted-foreground uppercase tracking-widest select-none">Personal</span>
         </div>
       </div>
 
-      {/* Nav links */}
       <nav className="flex-1 py-3 space-y-0.5">
         {navItems.map((item) => {
           const isActive =
@@ -70,42 +48,28 @@ export default function SidebarNav({ inboxCount, queuedCount }: SidebarNavProps)
               key={item.href}
               href={item.href}
               className={cn(
-                'flex items-center justify-between w-full px-3 py-2 mx-2 rounded-lg text-sm transition-all duration-150',
-                'w-[calc(100%-16px)]',
+                'flex items-center justify-between w-[calc(100%-16px)] px-3 py-2 mx-2 rounded-lg text-sm transition-colors duration-150',
                 isActive
-                  ? 'bg-gray-100 text-gray-900 font-medium border border-gray-200'
-                  : 'text-gray-500 hover:text-gray-900 hover:bg-gray-50 border border-transparent'
+                  ? 'bg-sidebar-accent text-foreground font-medium'
+                  : 'text-muted-foreground hover:text-foreground hover:bg-sidebar-accent/90'
               )}
             >
               <span className="flex items-center gap-2.5">
                 <Icon
                   className={cn(
-                    'size-4 flex-shrink-0 transition-colors duration-150',
-                    isActive ? 'text-gray-900' : 'text-gray-400 group-hover:text-gray-600'
+                    'size-4 flex-shrink-0',
+                    isActive ? 'text-primary' : 'text-muted-foreground'
                   )}
                 />
                 {item.label}
               </span>
-              {item.badge !== undefined && item.badge > 0 && (
-                <span
-                  className={cn(
-                    'text-[10px] font-medium px-1.5 py-0.5 rounded-full leading-none',
-                    item.badgeType === 'inbox'
-                      ? 'bg-amber-50 text-amber-700 border border-amber-200'
-                      : 'bg-blue-50 text-blue-700 border border-blue-200'
-                  )}
-                >
-                  {item.badge > 99 ? '99+' : item.badge}
-                </span>
-              )}
             </Link>
           )
         })}
       </nav>
 
-      {/* Footer */}
-      <div className="px-4 py-3 border-t border-gray-100">
-        <p className="text-[10px] text-gray-300 select-none">Data stored locally</p>
+      <div className="px-4 py-3 border-t border-border">
+        <p className="text-[10px] text-muted-foreground/70 select-none">Data stored locally</p>
       </div>
     </aside>
   )

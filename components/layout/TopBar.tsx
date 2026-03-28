@@ -1,57 +1,33 @@
 'use client'
 
-import { X, Plus, Search } from 'lucide-react'
+import { Plus } from 'lucide-react'
 
 interface TopBarProps {
   pageTitle: string
-  onAddClick: () => void
-  showSearch?: boolean
-  searchQuery?: string
-  onSearchChange?: (q: string) => void
+  /** Opens manual add; omitted on pages where capture/shortcuts are the primary flow */
+  onAddClick?: () => void
 }
 
-export default function TopBar({
-  pageTitle,
-  onAddClick,
-  showSearch = false,
-  searchQuery = '',
-  onSearchChange,
-}: TopBarProps) {
+export default function TopBar({ pageTitle, onAddClick }: TopBarProps) {
   return (
-    <header className="flex items-center justify-between h-14 px-6 border-b border-gray-200 gap-4 bg-white">
-      <h1 className="text-sm font-semibold text-gray-900 tracking-tight shrink-0 font-serif">
+    <header className="flex items-center justify-between h-14 px-6 border-b border-border gap-4 bg-background">
+      <h1 className="text-sm font-semibold text-foreground/80 tracking-tight shrink-0">
         {pageTitle}
       </h1>
 
-      {showSearch && (
-        <div className="relative flex items-center w-64">
-          <Search className="absolute left-2.5 size-3.5 text-gray-400 pointer-events-none" />
-          <input
-            type="text"
-            placeholder="Search..."
-            value={searchQuery}
-            onChange={(e) => onSearchChange?.(e.target.value)}
-            className="w-full h-8 rounded-lg pl-8 pr-8 text-sm text-gray-700 placeholder:text-gray-300 outline-none transition-colors bg-gray-50 border border-gray-200 focus:border-gray-400"
-          />
-          {searchQuery && (
-            <button
-              onClick={() => onSearchChange?.('')}
-              className="absolute right-2 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 transition-colors"
-              aria-label="Clear search"
-            >
-              <X className="size-3.5" />
-            </button>
-          )}
-        </div>
+      {onAddClick ? (
+        <button
+          type="button"
+          onClick={onAddClick}
+          className="flex items-center justify-center size-8 rounded-lg text-muted-foreground shrink-0 transition-colors hover:text-foreground hover:bg-muted"
+          aria-label="Add article manually"
+          title="Add article manually"
+        >
+          <Plus className="size-4" strokeWidth={1.75} />
+        </button>
+      ) : (
+        <span className="size-8 shrink-0" aria-hidden />
       )}
-
-      <button
-        onClick={onAddClick}
-        className="flex items-center gap-1.5 px-4 h-8 rounded-lg text-sm font-medium text-white shrink-0 transition-all duration-200 hover:opacity-90 bg-gray-900"
-      >
-        <Plus className="size-3.5" />
-        Add
-      </button>
     </header>
   )
 }

@@ -1,22 +1,47 @@
 'use client'
 
-import { useEffect, useState, useRef, Suspense } from 'react'
+import { useEffect, useState, useRef, Suspense, useCallback } from 'react'
 import { useSearchParams } from 'next/navigation'
 import { useReadingItems } from '@/hooks/use-reading-items'
+import {
+  deriveTitleFromUrl,
+  derivePublisherFromUrl,
+  isLikelySocialThreadUrl,
+  type LinkPreviewResult,
+} from '@/lib/link-preview'
 import { BookMarked, CheckCircle, AlertCircle, Loader2, ExternalLink } from 'lucide-react'
 
 type PageState = 'saving' | 'saved' | 'manual' | 'error'
 
+/** macOS shows this in Notification Center when the browser allows notifications for this origin. */
+async function notifyReadingQueueSaved(title: string) {
+  if (typeof window === 'undefined' || !('Notification' in window)) return
+
+  const clipped = title.length > 90 ? `${title.slice(0, 87)}…` : title
+  const body = `Added to your queue: ${clipped}`
+
+  const fire = () => {
+    try {
+      new Notification('Reading Queue', { body })
+    } catch {
+      /* ignore — e.g. unsupported */
+    }
+  }
+
+  if (Notification.permission === 'granted') {
+    fire()
+    return
+  }
+  if (Notification.permission === 'default') {
+    const p = await Notification.requestPermission()
+    if (p === 'granted') fire()
+  }
+}
+
 function LogoMark() {
   return (
-    <div
-      className="w-9 h-9 rounded-xl flex items-center justify-center mb-4 mx-auto"
-      style={{
-        background: 'linear-gradient(135deg, #6366f1 0%, #4f46e5 100%)',
-        boxShadow: '0 0 0 1px rgba(99,102,241,0.3)',
-      }}
-    >
-      <BookMarked size={18} className="text-white" />
+    <div className="w-9 h-9 rounded-xl flex items-center justify-center mb-4 mx-auto bg-primary shadow-[0_0_0_1px_rgba(217,119,87,0.25)]">
+      <BookMarked size={18} className="text-primary-foreground" />
     </div>
   )
 }
@@ -27,49 +52,81 @@ function AddPageInner() {
 
   const urlParam = searchParams.get('url') ?? ''
   const titleParam = searchParams.get('title') ?? ''
-  const hasParams = urlParam.length > 0 && titleParam.length > 0
+  const hasUrl = urlParam.length > 0
 
-  const [state, setState] = useState<PageState>(hasParams ? 'saving' : 'manual')
+  const [state, setState] = useState<PageState>(hasUrl ? 'saving' : 'manual')
   const [errorMessage, setErrorMessage] = useState('')
   const [canClose, setCanClose] = useState(true)
   const [manualUrl, setManualUrl] = useState('')
-  const [manualTitle, setManualTitle] = useState('')
   const [manualSaving, setManualSaving] = useState(false)
+  const [savedTitle, setSavedTitle] = useState('')
   const hasSaved = useRef(false)
 
-  // Auto-save on mount when params are present
-  useEffect(() => {
-    if (!hasParams || hasSaved.current) return
-    hasSaved.current = true
+  const persistFromUrl = useCallback(
+    async (url: string, pageTitleHint?: string) => {
+      let title = pageTitleHint?.trim() ?? ''
+      let publisher = ''
+      let previewImageUrl: string | undefined
+      let previewDescription: string | undefined
 
-    try {
+      if (!title) {
+        try {
+          const res = await fetch(`/api/link-preview?url=${encodeURIComponent(url)}`)
+          const data = (await res.json()) as LinkPreviewResult
+          title = data.title?.trim() || deriveTitleFromUrl(url)
+          publisher =
+            data.siteName?.trim() ||
+            (isLikelySocialThreadUrl(url) ? 'X' : derivePublisherFromUrl(url))
+          previewImageUrl = data.imageUrl
+          previewDescription = data.description
+        } catch {
+          title = deriveTitleFromUrl(url)
+          publisher = isLikelySocialThreadUrl(url) ? 'X' : derivePublisherFromUrl(url)
+        }
+      } else {
+        publisher = isLikelySocialThreadUrl(url) ? 'X' : derivePublisherFromUrl(url)
+      }
+
       addItem({
-        title: titleParam,
-        url: urlParam,
-        publisher: '',
+        title,
+        url,
+        publisher: publisher || 'Other',
         sourceType: 'other',
         topic: 'other',
         tags: [],
         priority: 'medium',
         status: 'inbox',
         isFavorite: false,
+        previewImageUrl,
+        previewDescription,
       })
-      setState('saved')
-    } catch (err) {
-      const msg = err instanceof Error ? err.message : 'Something went wrong.'
-      setErrorMessage(msg)
-      setState('error')
-    }
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [])
+      setSavedTitle(title)
+      await notifyReadingQueueSaved(title)
+    },
+    [addItem]
+  )
 
-  // Auto-close after save
+  useEffect(() => {
+    if (!hasUrl || hasSaved.current) return
+    hasSaved.current = true
+
+    void (async () => {
+      try {
+        await persistFromUrl(urlParam, titleParam || undefined)
+        setState('saved')
+      } catch (err) {
+        const msg = err instanceof Error ? err.message : 'Something went wrong.'
+        setErrorMessage(msg)
+        setState('error')
+      }
+    })()
+  }, [hasUrl, urlParam, titleParam, persistFromUrl])
+
   useEffect(() => {
     if (state !== 'saved') return
     const timer = setTimeout(() => {
       try {
         window.close()
-        // If still open after a tick, the browser blocked it
         setTimeout(() => setCanClose(false), 300)
       } catch {
         setCanClose(false)
@@ -78,21 +135,12 @@ function AddPageInner() {
     return () => clearTimeout(timer)
   }, [state])
 
-  function handleManualSave() {
-    if (!manualUrl.trim() || !manualTitle.trim()) return
+  async function handleManualSave() {
+    const href = manualUrl.trim()
+    if (!href) return
     setManualSaving(true)
     try {
-      addItem({
-        title: manualTitle.trim(),
-        url: manualUrl.trim(),
-        publisher: '',
-        sourceType: 'other',
-        topic: 'other',
-        tags: [],
-        priority: 'medium',
-        status: 'inbox',
-        isFavorite: false,
-      })
+      await persistFromUrl(href)
       setState('saved')
     } catch (err) {
       const msg = err instanceof Error ? err.message : 'Something went wrong.'
@@ -104,138 +152,123 @@ function AddPageInner() {
 
   function handleRetry() {
     hasSaved.current = false
-    setState(hasParams ? 'saving' : 'manual')
+    setState(hasUrl ? 'saving' : 'manual')
     setErrorMessage('')
-    if (hasParams) {
+    setManualSaving(false)
+    if (hasUrl) {
       hasSaved.current = true
-      try {
-        addItem({
-          title: titleParam,
-          url: urlParam,
-          publisher: '',
-          sourceType: 'other',
-          topic: 'other',
-          tags: [],
-          priority: 'medium',
-          status: 'inbox',
-          isFavorite: false,
-        })
-        setState('saved')
-      } catch (err) {
-        const msg = err instanceof Error ? err.message : 'Something went wrong.'
-        setErrorMessage(msg)
-        setState('error')
-      }
+      void (async () => {
+        try {
+          await persistFromUrl(urlParam, titleParam || undefined)
+          setState('saved')
+        } catch (err) {
+          const msg = err instanceof Error ? err.message : 'Something went wrong.'
+          setErrorMessage(msg)
+          setState('error')
+        }
+      })()
     }
   }
 
-  const displayTitle = titleParam || manualTitle
+  const displayTitle = savedTitle || titleParam || manualUrl
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-[#060912] px-4 py-6">
-      <div className="w-full max-w-sm mx-auto bg-white/[0.04] border border-white/[0.08] rounded-2xl p-6">
+    <div className="min-h-screen flex items-center justify-center bg-background px-4 py-6">
+      <div className="w-full max-w-sm mx-auto bg-card border border-border rounded-2xl p-6 shadow-sm">
         <LogoMark />
 
-        {/* State A — Saving */}
         {state === 'saving' && (
           <div className="text-center space-y-3">
-            <Loader2 size={32} className="text-indigo-400 mx-auto animate-spin" />
-            <p className="text-sm text-white/60">Saving...</p>
+            <Loader2 size={32} className="text-muted-foreground mx-auto animate-spin" />
+            <p className="text-sm text-muted-foreground">Fetching title and saving…</p>
           </div>
         )}
 
-        {/* State B — Saved */}
         {state === 'saved' && (
           <div className="text-center space-y-3">
-            <CheckCircle size={40} className="text-emerald-400 mx-auto" />
+            <CheckCircle size={40} className="text-lime-700 mx-auto" />
             {displayTitle && (
               <p
-                className="text-sm font-medium text-white/80 truncate px-2"
+                className="text-sm font-medium text-foreground truncate px-2"
                 title={displayTitle}
               >
-                {displayTitle}
+                {savedTitle || displayTitle}
               </p>
             )}
-            <p className="text-xs text-white/40">Saved to inbox</p>
+            <p className="text-xs text-muted-foreground">Saved to your bookmarks</p>
 
             {!canClose && (
-              <p className="text-xs text-white/30 pt-1">You can close this tab</p>
+              <p className="text-xs text-muted-foreground/80 pt-1">You can close this tab</p>
             )}
 
             <a
-              href="/inbox"
+              href="/"
               target="_blank"
               rel="noopener noreferrer"
-              onClick={() => { try { window.close() } catch { /* ignore */ } }}
-              className="inline-flex items-center gap-1.5 mt-2 text-xs text-indigo-400 hover:text-indigo-300 transition-colors"
+              onClick={() => {
+                try {
+                  window.close()
+                } catch {
+                  /* ignore */
+                }
+              }}
+              className="inline-flex items-center gap-1.5 mt-2 text-xs text-primary hover:text-primary/85 underline-offset-2 hover:underline transition-colors"
             >
-              View Inbox
+              Open bookmarks
               <ExternalLink size={11} />
             </a>
           </div>
         )}
 
-        {/* State C — Manual entry */}
         {state === 'manual' && (
           <div className="space-y-4">
             <div className="text-center mb-2">
-              <p className="text-sm font-medium text-white/70">Save to inbox</p>
-              <p className="text-xs text-white/30 mt-0.5">Add any article manually</p>
+              <p className="text-sm font-medium text-foreground">Add bookmark</p>
+              <p className="text-xs text-muted-foreground mt-0.5">
+                Paste a link — the title is read from the page. Use this if the shortcut is
+                unavailable.
+              </p>
             </div>
 
-            <div className="space-y-2.5">
-              <div>
-                <label className="block text-xs text-white/40 mb-1.5" htmlFor="add-url">
-                  URL
-                </label>
-                <input
-                  id="add-url"
-                  type="url"
-                  value={manualUrl}
-                  onChange={(e) => setManualUrl(e.target.value)}
-                  placeholder="https://..."
-                  className="w-full rounded-xl bg-white/[0.06] border border-white/[0.10] px-3 py-2 text-sm text-white/80 placeholder:text-white/20 outline-none focus:border-indigo-500/50 focus:ring-1 focus:ring-indigo-500/30 transition-all"
-                />
-              </div>
-              <div>
-                <label className="block text-xs text-white/40 mb-1.5" htmlFor="add-title">
-                  Title
-                </label>
-                <input
-                  id="add-title"
-                  type="text"
-                  value={manualTitle}
-                  onChange={(e) => setManualTitle(e.target.value)}
-                  placeholder="Article title..."
-                  className="w-full rounded-xl bg-white/[0.06] border border-white/[0.10] px-3 py-2 text-sm text-white/80 placeholder:text-white/20 outline-none focus:border-indigo-500/50 focus:ring-1 focus:ring-indigo-500/30 transition-all"
-                  onKeyDown={(e) => { if (e.key === 'Enter') handleManualSave() }}
-                />
-              </div>
+            <div>
+              <label className="block text-xs text-muted-foreground mb-1.5" htmlFor="add-url">
+                URL
+              </label>
+              <input
+                id="add-url"
+                type="url"
+                value={manualUrl}
+                onChange={(e) => setManualUrl(e.target.value)}
+                placeholder="https://..."
+                className="w-full rounded-xl bg-card border border-border px-3 py-2 text-sm text-foreground placeholder:text-muted-foreground outline-none focus:border-stone-500 focus:ring-1 focus:ring-stone-500/20 transition-colors"
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter') void handleManualSave()
+                }}
+              />
             </div>
 
             <button
               type="button"
-              onClick={handleManualSave}
-              disabled={!manualUrl.trim() || !manualTitle.trim() || manualSaving}
-              className="w-full py-2.5 rounded-xl text-sm font-medium bg-indigo-500 hover:bg-indigo-400 disabled:bg-white/[0.06] disabled:text-white/20 text-white transition-all duration-200"
+              onClick={() => void handleManualSave()}
+              disabled={!manualUrl.trim() || manualSaving}
+              className="w-full py-2.5 rounded-xl text-sm font-medium bg-primary text-primary-foreground hover:bg-primary/90 disabled:bg-muted disabled:text-muted-foreground transition-colors duration-200"
             >
-              Save to inbox
+              {manualSaving ? 'Saving…' : 'Save bookmark'}
             </button>
           </div>
         )}
 
-        {/* State D — Error */}
         {state === 'error' && (
           <div className="text-center space-y-3">
             <AlertCircle size={36} className="text-red-400 mx-auto" />
-            <p className="text-sm font-medium text-white/70">Something went wrong</p>
+            <p className="text-sm font-medium text-foreground">Something went wrong</p>
             {errorMessage && (
-              <p className="text-xs text-white/30 break-words">{errorMessage}</p>
+              <p className="text-xs text-muted-foreground break-words">{errorMessage}</p>
             )}
             <button
               type="button"
               onClick={handleRetry}
-              className="px-4 py-2 rounded-xl text-sm font-medium bg-white/[0.06] hover:bg-white/[0.10] text-white/60 hover:text-white/80 border border-white/[0.08] transition-all"
+              className="px-4 py-2 rounded-xl text-sm font-medium bg-muted/50 hover:bg-muted text-muted-foreground hover:text-foreground border border-border transition-colors"
             >
               Try again
             </button>
@@ -250,8 +283,8 @@ export default function AddPage() {
   return (
     <Suspense
       fallback={
-        <div className="min-h-screen flex items-center justify-center bg-[#060912]">
-          <Loader2 size={24} className="text-indigo-400 animate-spin" />
+        <div className="min-h-screen flex items-center justify-center bg-background">
+          <Loader2 size={24} className="text-muted-foreground animate-spin" />
         </div>
       }
     >

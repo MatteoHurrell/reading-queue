@@ -134,28 +134,14 @@ test.describe('Page-by-page UI audit', () => {
     await shot(page, '01-dashboard-scrolled')
   })
 
-  test('Inbox', async ({ page }) => {
-    await seedDemoData(page)
+  test('Legacy inbox and queue URLs redirect to bookmarks', async ({ page }) => {
     await page.goto('/inbox')
-    await page.waitForLoadState('networkidle')
-    await page.waitForTimeout(800)
-    await shot(page, '02-inbox')
-  })
+    await page.waitForURL('**/')
+    expect(page.url()).toMatch(/\/$/)
 
-  test('Queue', async ({ page }) => {
-    await seedDemoData(page)
     await page.goto('/queue')
-    await page.waitForLoadState('networkidle')
-    await page.waitForTimeout(800)
-    await shot(page, '03-queue')
-
-    // Switch to table view
-    const tableBtn = page.locator('button').filter({ hasText: /table|list/i }).first()
-    if (await tableBtn.isVisible()) {
-      await tableBtn.click()
-      await page.waitForTimeout(400)
-      await shot(page, '03-queue-table-view')
-    }
+    await page.waitForURL('**/')
+    expect(page.url()).toMatch(/\/$/)
   })
 
   test('Library', async ({ page }) => {
@@ -192,20 +178,26 @@ test.describe('Page-by-page UI audit', () => {
     await page.waitForLoadState('networkidle')
     await page.waitForTimeout(500)
 
-    // Open quick add
-    const addBtn = page.locator('button').filter({ hasText: /add/i }).first()
+    // Open quick add (icon-only control; name includes "Add")
+    const addBtn = page.getByRole('button', { name: /add article manually/i })
     await addBtn.click()
-    await page.waitForTimeout(500)
+    await page.getByRole('dialog').waitFor({ state: 'visible' })
+    await page.waitForTimeout(300)
     await shot(page, '07-quick-add-modal-empty')
 
+    const urlInput = page.getByPlaceholder('URL')
+
     // Fill in URL to trigger duplicate check
-    await page.fill('input[placeholder*="https"]', 'https://bloomberg.com/everything-bubble')
+    await urlInput.fill('https://bloomberg.com/everything-bubble')
     await page.waitForTimeout(400)
     await shot(page, '07-quick-add-modal-duplicate-warning')
 
-    // Clear and fill valid data
-    await page.fill('input[placeholder*="https"]', 'https://wsj.com/some-article')
-    await page.fill('input[placeholder*="title" i]', 'Test Article Title')
+    // Clear and fill URL only — title is resolved via /api/link-preview
+    await urlInput.fill('https://example.com')
+    await page.waitForResponse(
+      (r) => r.url().includes('/api/link-preview') && r.ok(),
+      { timeout: 15_000 }
+    )
     await page.waitForTimeout(300)
     await shot(page, '07-quick-add-modal-filled')
   })
@@ -218,9 +210,9 @@ test.describe('Page-by-page UI audit', () => {
     await page.waitForTimeout(800)
     await shot(page, '08-mobile-dashboard')
 
-    await page.goto('/queue')
+    await page.goto('/library')
     await page.waitForTimeout(600)
-    await shot(page, '08-mobile-queue')
+    await shot(page, '08-mobile-archive')
   })
 
 })

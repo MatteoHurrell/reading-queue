@@ -11,7 +11,7 @@ interface Props {
 const TOPIC_PILL_COLORS: Record<string, string> = {
   'markets': 'bg-green-50 text-green-700 border-green-200 hover:border-green-300',
   'finance-business': 'bg-blue-50 text-blue-700 border-blue-200 hover:border-blue-300',
-  'tech-product': 'bg-purple-50 text-purple-700 border-purple-200 hover:border-purple-300',
+  'tech-product': 'bg-amber-50 text-amber-950 border-amber-200/80 hover:border-amber-300/90',
   'politics-policy': 'bg-red-50 text-red-700 border-red-200 hover:border-red-300',
   'economics': 'bg-amber-50 text-amber-700 border-amber-200 hover:border-amber-300',
   'essays-opinion': 'bg-orange-50 text-orange-700 border-orange-200 hover:border-orange-300',
@@ -25,13 +25,13 @@ export default function TopicBreakdownPanel({ items }: Props) {
   const topicsWithItems = TOPICS.filter((t) => grouped[t].length > 0)
 
   return (
-    <section className="bg-white border border-gray-200 rounded-2xl p-5">
-      <h2 className="text-[11px] font-semibold text-gray-400 uppercase tracking-widest mb-4">
+    <section className="bg-card border border-border rounded-2xl p-5 shadow-sm">
+      <h2 className="text-[11px] font-semibold text-muted-foreground uppercase tracking-widest mb-4">
         Topic Snapshot
       </h2>
 
       {topicsWithItems.length === 0 ? (
-        <p className="text-sm text-gray-400">No queued items yet.</p>
+        <p className="text-sm text-muted-foreground">No queued items yet.</p>
       ) : (
         <div className="flex flex-wrap gap-2">
           {topicsWithItems.map((topic) => {

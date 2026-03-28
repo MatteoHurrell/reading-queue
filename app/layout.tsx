@@ -29,7 +29,7 @@ export default function RootLayout({
       lang="en"
       className={`${instrumentSans.variable} ${instrumentSerif.variable} h-full antialiased`}
     >
-      <body className="min-h-full bg-white text-gray-900 flex flex-col">
+      <body className="min-h-full bg-background text-foreground flex flex-col">
         <TooltipProvider>{children}</TooltipProvider>
       </body>
     </html>
