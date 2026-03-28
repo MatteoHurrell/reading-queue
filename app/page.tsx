@@ -66,17 +66,17 @@ export default function DashboardPage() {
         <div className="max-w-5xl mx-auto px-6 py-6 space-y-4">
           {/* Inbox triage banner */}
           {inboxItems.length > 0 && (
-            <div className="bg-amber-500/[0.08] border border-amber-500/15 rounded-2xl px-5 py-3.5 flex items-center justify-between">
-              <span className="text-sm text-amber-200/80">
+            <div className="bg-amber-50 border border-amber-200 rounded-2xl px-5 py-3.5 flex items-center justify-between">
+              <span className="text-sm text-amber-900">
                 You have{' '}
-                <span className="font-semibold text-amber-300">
+                <span className="font-semibold text-amber-800">
                   {inboxItems.length} {inboxItems.length === 1 ? 'item' : 'items'}
                 </span>{' '}
                 in your inbox to triage
               </span>
               <Link
                 href="/inbox"
-                className="text-amber-400 hover:text-amber-300 text-sm font-medium transition-colors"
+                className="text-amber-700 hover:text-amber-900 text-sm font-medium transition-colors"
               >
                 Go to Inbox &rarr;
               </Link>

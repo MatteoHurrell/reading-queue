@@ -68,9 +68,9 @@ function itemToForm(item: ReadingItem): FormState {
 }
 
 const inputClass =
-  'bg-white/[0.05] border border-white/[0.1] rounded-xl text-sm text-white placeholder:text-white/25 focus:border-indigo-500/50 focus:ring-0 h-9 px-3'
+  'bg-gray-50 border border-gray-200 rounded-xl text-sm text-gray-900 placeholder:text-gray-300 focus:border-gray-400 focus:ring-0 h-9 px-3'
 
-const labelClass = 'text-xs font-medium text-white/50 uppercase tracking-wider mb-1.5'
+const labelClass = 'text-xs font-medium text-gray-500 uppercase tracking-wider mb-1.5'
 
 export default function EditItemModal({ item, open, onClose, onSave }: Props) {
   const [form, setForm] = useState<FormState | null>(null)
@@ -137,42 +137,42 @@ export default function EditItemModal({ item, open, onClose, onSave }: Props) {
   return (
     <Dialog open={open} onOpenChange={(isOpen) => { if (!isOpen) onClose() }}>
       <DialogContent
-        className="sm:max-w-lg bg-[#0d1120] border border-white/[0.1] rounded-2xl shadow-2xl"
+        className="sm:max-w-lg bg-white border border-gray-200 rounded-2xl shadow-lg"
         onKeyDown={handleKeyDown}
       >
         <DialogHeader>
-          <DialogTitle className="text-lg font-semibold text-white">Edit item</DialogTitle>
+          <DialogTitle className="text-lg font-semibold text-gray-900 font-serif">Edit item</DialogTitle>
         </DialogHeader>
 
         <div className="flex flex-col gap-4 py-1 max-h-[70vh] overflow-y-auto pr-1">
           {/* URL */}
           <div className="flex flex-col gap-1">
             <label className={labelClass}>
-              URL <span className="text-indigo-400">*</span>
+              URL <span className="text-blue-600">*</span>
             </label>
             <Input
               type="url"
               placeholder="https://..."
               value={form.url}
               onChange={(e) => setField('url', e.target.value)}
-              className={`${inputClass} ${errors.url ? 'border-red-500/60' : ''}`}
+              className={`${inputClass} ${errors.url ? 'border-red-400' : ''}`}
             />
-            {errors.url && <p className="text-xs text-red-400">{errors.url}</p>}
+            {errors.url && <p className="text-xs text-red-500">{errors.url}</p>}
           </div>
 
           {/* Title */}
           <div className="flex flex-col gap-1">
             <label className={labelClass}>
-              Title <span className="text-indigo-400">*</span>
+              Title <span className="text-blue-600">*</span>
             </label>
             <Input
               type="text"
               placeholder="Article title"
               value={form.title}
               onChange={(e) => setField('title', e.target.value)}
-              className={`${inputClass} ${errors.title ? 'border-red-500/60' : ''}`}
+              className={`${inputClass} ${errors.title ? 'border-red-400' : ''}`}
             />
-            {errors.title && <p className="text-xs text-red-400">{errors.title}</p>}
+            {errors.title && <p className="text-xs text-red-500">{errors.title}</p>}
           </div>
 
           {/* Publisher */}
@@ -213,7 +213,7 @@ export default function EditItemModal({ item, open, onClose, onSave }: Props) {
                 value={form.topic}
                 onValueChange={(val) => setField('topic', val as Topic)}
               >
-                <SelectTrigger className="w-full bg-white/[0.05] border border-white/[0.1] rounded-xl text-sm text-white h-9">
+                <SelectTrigger className="w-full bg-gray-50 border border-gray-200 rounded-xl text-sm text-gray-900 h-9">
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
@@ -232,7 +232,7 @@ export default function EditItemModal({ item, open, onClose, onSave }: Props) {
                 value={form.sourceType}
                 onValueChange={(val) => setField('sourceType', val as SourceType)}
               >
-                <SelectTrigger className="w-full bg-white/[0.05] border border-white/[0.1] rounded-xl text-sm text-white h-9">
+                <SelectTrigger className="w-full bg-gray-50 border border-gray-200 rounded-xl text-sm text-gray-900 h-9">
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
@@ -254,7 +254,7 @@ export default function EditItemModal({ item, open, onClose, onSave }: Props) {
                 value={form.priority}
                 onValueChange={(val) => setField('priority', val as Priority)}
               >
-                <SelectTrigger className="w-full bg-white/[0.05] border border-white/[0.1] rounded-xl text-sm text-white h-9">
+                <SelectTrigger className="w-full bg-gray-50 border border-gray-200 rounded-xl text-sm text-gray-900 h-9">
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
@@ -286,7 +286,7 @@ export default function EditItemModal({ item, open, onClose, onSave }: Props) {
           <div className="flex flex-col gap-1">
             <label className={labelClass}>
               Tags{' '}
-              <span className="text-white/30 font-normal normal-case tracking-normal">(comma-separated)</span>
+              <span className="text-gray-400 font-normal normal-case tracking-normal">(comma-separated)</span>
             </label>
             <Input
               type="text"
@@ -304,7 +304,7 @@ export default function EditItemModal({ item, open, onClose, onSave }: Props) {
               placeholder="Why is this worth reading?"
               value={form.whySaved}
               onChange={(e) => setField('whySaved', e.target.value)}
-              className="bg-white/[0.05] border border-white/[0.1] rounded-xl text-sm text-white placeholder:text-white/25 focus:border-indigo-500/50 focus:ring-0 min-h-[60px] resize-none px-3 py-2"
+              className="bg-gray-50 border border-gray-200 rounded-xl text-sm text-gray-900 placeholder:text-gray-300 focus:border-gray-400 focus:ring-0 min-h-[60px] resize-none px-3 py-2"
             />
           </div>
 
@@ -315,7 +315,7 @@ export default function EditItemModal({ item, open, onClose, onSave }: Props) {
               placeholder="Your notes after reading..."
               value={form.notes}
               onChange={(e) => setField('notes', e.target.value)}
-              className="bg-white/[0.05] border border-white/[0.1] rounded-xl text-sm text-white placeholder:text-white/25 focus:border-indigo-500/50 focus:ring-0 min-h-[70px] resize-none px-3 py-2"
+              className="bg-gray-50 border border-gray-200 rounded-xl text-sm text-gray-900 placeholder:text-gray-300 focus:border-gray-400 focus:ring-0 min-h-[70px] resize-none px-3 py-2"
             />
           </div>
 
@@ -325,9 +325,9 @@ export default function EditItemModal({ item, open, onClose, onSave }: Props) {
               type="checkbox"
               checked={form.isFavorite}
               onChange={(e) => setField('isFavorite', e.target.checked)}
-              className="size-4 rounded accent-amber-400"
+              className="size-4 rounded accent-amber-500"
             />
-            <span className="text-sm text-white/60">Mark as favorite</span>
+            <span className="text-sm text-gray-600">Mark as favorite</span>
           </label>
         </div>
 
@@ -335,14 +335,13 @@ export default function EditItemModal({ item, open, onClose, onSave }: Props) {
           <Button
             variant="outline"
             onClick={onClose}
-            className="bg-white/[0.05] border border-white/[0.1] text-white/60 hover:text-white rounded-xl"
+            className="bg-white border border-gray-200 text-gray-600 hover:text-gray-900 rounded-xl"
           >
             Cancel
           </Button>
           <Button
             onClick={handleSave}
-            className="bg-gradient-to-r from-indigo-600 to-violet-600 hover:from-indigo-500 hover:to-violet-500 text-white font-medium rounded-xl border-0"
-            style={{ boxShadow: '0 0 20px rgba(99,102,241,0.3)' }}
+            className="bg-gray-900 hover:bg-gray-800 text-white font-medium rounded-xl border-0"
           >
             Save changes
           </Button>

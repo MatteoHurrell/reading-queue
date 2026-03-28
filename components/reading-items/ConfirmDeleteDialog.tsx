@@ -25,12 +25,12 @@ export default function ConfirmDeleteDialog({
 }: Props) {
   return (
     <Dialog open={open} onOpenChange={(isOpen) => { if (!isOpen) onCancel() }}>
-      <DialogContent className="sm:max-w-sm bg-[#1a1a1a] border-white/[0.1]">
+      <DialogContent className="sm:max-w-sm bg-white border-gray-200">
         <DialogHeader>
-          <DialogTitle className="text-white/90">Delete item?</DialogTitle>
-          <DialogDescription className="text-white/50">
+          <DialogTitle className="text-gray-900">Delete item?</DialogTitle>
+          <DialogDescription className="text-gray-500">
             This will permanently remove{' '}
-            <span className="text-white/70 font-medium">&ldquo;{itemTitle}&rdquo;</span>{' '}
+            <span className="text-gray-700 font-medium">&ldquo;{itemTitle}&rdquo;</span>{' '}
             from your reading queue. This action cannot be undone.
           </DialogDescription>
         </DialogHeader>

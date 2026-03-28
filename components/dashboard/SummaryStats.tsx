@@ -23,17 +23,17 @@ interface StatCardProps {
 
 function StatCard({ value, label, subtext, valueClass, icon }: StatCardProps) {
   return (
-    <div className="flex-1 bg-white/[0.03] backdrop-blur-md border border-white/[0.07] rounded-2xl p-5 hover:border-white/[0.12] transition-all duration-200 min-w-0">
+    <div className="flex-1 bg-white border border-gray-200 rounded-2xl p-5 hover:border-gray-300 transition-all duration-200 min-w-0">
       <div className="flex items-start justify-between">
-        <span className="text-[11px] font-medium text-white/30 uppercase tracking-wider">
+        <span className="text-[11px] font-medium text-gray-400 uppercase tracking-wider">
           {label}
         </span>
         <span className="flex-shrink-0">{icon}</span>
       </div>
-      <div className={`text-4xl font-bold tracking-tight mt-2 mb-0.5 ${valueClass}`}>
+      <div className={`text-4xl font-bold tracking-tight mt-2 mb-0.5 font-serif ${valueClass}`}>
         {value}
       </div>
-      <div className="text-xs text-white/25">{subtext}</div>
+      <div className="text-xs text-gray-400">{subtext}</div>
     </div>
   )
 }
@@ -50,29 +50,29 @@ export default function SummaryStats({ items }: Props) {
         value={inboxCount}
         label="Inbox"
         subtext="awaiting triage"
-        valueClass="text-amber-400"
-        icon={<Inbox className="size-4 text-amber-500/40" />}
+        valueClass="text-amber-600"
+        icon={<Inbox className="size-4 text-amber-400" />}
       />
       <StatCard
         value={queuedCount}
         label="Queue"
         subtext="ready to read"
-        valueClass="text-indigo-400"
-        icon={<BookOpen className="size-4 text-indigo-500/40" />}
+        valueClass="text-blue-600"
+        icon={<BookOpen className="size-4 text-blue-400" />}
       />
       <StatCard
         value={readingCount}
         label="Reading"
         subtext="in progress"
-        valueClass="text-blue-400"
-        icon={<BookOpenCheck className="size-4 text-blue-500/40" />}
+        valueClass="text-sky-600"
+        icon={<BookOpenCheck className="size-4 text-sky-400" />}
       />
       <StatCard
         value={finishedCount}
         label="Finished"
         subtext="all time"
-        valueClass="text-emerald-400"
-        icon={<CheckCircle className="size-4 text-emerald-500/40" />}
+        valueClass="text-emerald-600"
+        icon={<CheckCircle className="size-4 text-emerald-400" />}
       />
     </div>
   )

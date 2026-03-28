@@ -33,33 +33,33 @@ export default function ReadingItemTable({
 }: Props) {
   if (items.length === 0) {
     return (
-      <div className="py-16 text-center text-white/30 text-sm">
+      <div className="py-16 text-center text-gray-400 text-sm">
         No items to display.
       </div>
     )
   }
 
   return (
-    <div className="w-full overflow-x-auto rounded-2xl border border-white/[0.07] backdrop-blur-sm">
+    <div className="w-full overflow-x-auto rounded-2xl border border-gray-200">
       <table className="w-full text-sm border-collapse">
         <thead>
-          <tr className="bg-white/[0.03] border-b border-white/[0.07]">
-            <th className="text-left px-4 py-3 text-[11px] font-semibold text-white/30 uppercase tracking-wider">
+          <tr className="bg-gray-50 border-b border-gray-200">
+            <th className="text-left px-4 py-3 text-[11px] font-semibold text-gray-400 uppercase tracking-wider">
               Title
             </th>
-            <th className="text-left px-4 py-3 text-[11px] font-semibold text-white/30 uppercase tracking-wider hidden md:table-cell">
+            <th className="text-left px-4 py-3 text-[11px] font-semibold text-gray-400 uppercase tracking-wider hidden md:table-cell">
               Type / Topic
             </th>
-            <th className="text-left px-4 py-3 text-[11px] font-semibold text-white/30 uppercase tracking-wider hidden sm:table-cell">
+            <th className="text-left px-4 py-3 text-[11px] font-semibold text-gray-400 uppercase tracking-wider hidden sm:table-cell">
               Priority
             </th>
-            <th className="text-left px-4 py-3 text-[11px] font-semibold text-white/30 uppercase tracking-wider hidden sm:table-cell">
+            <th className="text-left px-4 py-3 text-[11px] font-semibold text-gray-400 uppercase tracking-wider hidden sm:table-cell">
               Status
             </th>
-            <th className="text-right px-4 py-3 text-[11px] font-semibold text-white/30 uppercase tracking-wider hidden lg:table-cell">
+            <th className="text-right px-4 py-3 text-[11px] font-semibold text-gray-400 uppercase tracking-wider hidden lg:table-cell">
               Time
             </th>
-            <th className="text-right px-4 py-3 text-[11px] font-semibold text-white/30 uppercase tracking-wider hidden lg:table-cell">
+            <th className="text-right px-4 py-3 text-[11px] font-semibold text-gray-400 uppercase tracking-wider hidden lg:table-cell">
               Saved
             </th>
             <th className="px-4 py-3 w-8" />
@@ -70,7 +70,7 @@ export default function ReadingItemTable({
           {items.map((item) => (
             <tr
               key={item.id}
-              className="border-b border-white/[0.04] last:border-0 bg-transparent hover:bg-white/[0.03] transition-colors duration-150"
+              className="border-b border-gray-100 last:border-0 bg-transparent hover:bg-gray-50 transition-colors duration-150"
             >
               {/* Title */}
               <td className="px-4 py-3 max-w-xs truncate">
@@ -78,14 +78,14 @@ export default function ReadingItemTable({
                   href={item.url}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="text-sm font-medium text-slate-200 hover:text-white transition-colors line-clamp-1 leading-snug"
+                  className="text-sm font-medium text-gray-800 hover:text-gray-900 transition-colors line-clamp-1 leading-snug"
                 >
                   {item.title}
                 </a>
-                <div className="text-xs text-white/35 mt-0.5 line-clamp-1">
+                <div className="text-xs text-gray-400 mt-0.5 line-clamp-1">
                   {item.publisher}
                   {item.author && item.author !== item.publisher && (
-                    <span className="text-white/25"> · {item.author}</span>
+                    <span className="text-gray-300"> &middot; {item.author}</span>
                   )}
                 </div>
               </td>
@@ -109,14 +109,14 @@ export default function ReadingItemTable({
               </td>
 
               {/* Est. time */}
-              <td className="px-4 py-3 text-right text-xs text-white/35 tabular-nums hidden lg:table-cell">
+              <td className="px-4 py-3 text-right text-xs text-gray-400 tabular-nums hidden lg:table-cell">
                 {item.estimatedMinutes !== undefined
                   ? formatReadTime(item.estimatedMinutes)
                   : '—'}
               </td>
 
               {/* Saved date */}
-              <td className="px-4 py-3 text-right text-xs text-white/25 hidden lg:table-cell whitespace-nowrap">
+              <td className="px-4 py-3 text-right text-xs text-gray-300 hidden lg:table-cell whitespace-nowrap">
                 {formatRelativeDate(item.createdAt)}
               </td>
 
@@ -126,8 +126,8 @@ export default function ReadingItemTable({
                   onClick={() => onToggleFavorite(item.id)}
                   className={`p-0.5 rounded transition-colors duration-200 ${
                     item.isFavorite
-                      ? 'text-yellow-400 hover:text-yellow-300'
-                      : 'text-white/20 hover:text-white/50'
+                      ? 'text-amber-500 hover:text-amber-600'
+                      : 'text-gray-300 hover:text-gray-500'
                   }`}
                   aria-label={item.isFavorite ? 'Remove from favorites' : 'Add to favorites'}
                 >
@@ -146,7 +146,7 @@ export default function ReadingItemTable({
                       <Button
                         variant="ghost"
                         size="icon-sm"
-                        className="text-white/25 hover:text-white/60 hover:bg-white/[0.06]"
+                        className="text-gray-400 hover:text-gray-600 hover:bg-gray-100"
                         aria-label="More actions"
                       />
                     }

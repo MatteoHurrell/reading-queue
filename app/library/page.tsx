@@ -150,18 +150,18 @@ export default function LibraryPage() {
       <div className="flex flex-col gap-5">
         {/* Search bar */}
         <div className="relative">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 size-4 text-white/30 pointer-events-none" />
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 size-4 text-gray-400 pointer-events-none" />
           <input
             type="text"
             placeholder="Search by title, publisher, author, tags, or notes…"
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            className="w-full h-9 bg-white/[0.05] border border-white/[0.08] rounded-xl pl-9 pr-9 text-sm text-white/70 placeholder:text-white/25 outline-none focus:border-indigo-500/40 transition-colors"
+            className="w-full h-9 bg-gray-50 border border-gray-200 rounded-xl pl-9 pr-9 text-sm text-gray-700 placeholder:text-gray-300 outline-none focus:border-gray-400 transition-colors"
           />
           {searchQuery && (
             <button
               onClick={() => setSearchQuery('')}
-              className="absolute right-3 top-1/2 -translate-y-1/2 text-white/30 hover:text-white/60 transition-colors"
+              className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 transition-colors"
               aria-label="Clear search"
             >
               <XIcon className="size-4" />
@@ -177,48 +177,47 @@ export default function LibraryPage() {
             setSearchQuery('')
           }}
         >
-          <TabsList className="bg-white/[0.03] border border-white/[0.07] rounded-xl p-1 h-auto gap-0.5">
+          <TabsList className="bg-gray-50 border border-gray-200 rounded-xl p-1 h-auto gap-0.5">
             <TabsTrigger
               value="finished"
-              className="gap-1.5 rounded-lg data-[state=active]:bg-white/[0.08] data-[state=active]:text-white data-[state=inactive]:text-white/40 data-[state=inactive]:hover:text-white/60 transition-all duration-200"
+              className="gap-1.5 rounded-lg data-[state=active]:bg-white data-[state=active]:text-gray-900 data-[state=active]:shadow-sm data-[state=inactive]:text-gray-400 data-[state=inactive]:hover:text-gray-600 transition-all duration-200"
             >
               Finished
-              <span className="text-[10px] px-1.5 py-0.5 rounded-full bg-white/[0.06] text-white/40 ml-1.5 tabular-nums">
+              <span className="text-[10px] px-1.5 py-0.5 rounded-full bg-gray-100 text-gray-400 ml-1.5 tabular-nums">
                 {finishedItems.length}
               </span>
             </TabsTrigger>
             <TabsTrigger
               value="archived"
-              className="gap-1.5 rounded-lg data-[state=active]:bg-white/[0.08] data-[state=active]:text-white data-[state=inactive]:text-white/40 data-[state=inactive]:hover:text-white/60 transition-all duration-200"
+              className="gap-1.5 rounded-lg data-[state=active]:bg-white data-[state=active]:text-gray-900 data-[state=active]:shadow-sm data-[state=inactive]:text-gray-400 data-[state=inactive]:hover:text-gray-600 transition-all duration-200"
             >
               Archived
-              <span className="text-[10px] px-1.5 py-0.5 rounded-full bg-white/[0.06] text-white/40 ml-1.5 tabular-nums">
+              <span className="text-[10px] px-1.5 py-0.5 rounded-full bg-gray-100 text-gray-400 ml-1.5 tabular-nums">
                 {archivedItems.length}
               </span>
             </TabsTrigger>
             <TabsTrigger
               value="dropped"
-              className="gap-1.5 rounded-lg data-[state=active]:bg-white/[0.08] data-[state=active]:text-white data-[state=inactive]:text-white/40 data-[state=inactive]:hover:text-white/60 transition-all duration-200"
+              className="gap-1.5 rounded-lg data-[state=active]:bg-white data-[state=active]:text-gray-900 data-[state=active]:shadow-sm data-[state=inactive]:text-gray-400 data-[state=inactive]:hover:text-gray-600 transition-all duration-200"
             >
               Dropped
-              <span className="text-[10px] px-1.5 py-0.5 rounded-full bg-white/[0.06] text-white/40 ml-1.5 tabular-nums">
+              <span className="text-[10px] px-1.5 py-0.5 rounded-full bg-gray-100 text-gray-400 ml-1.5 tabular-nums">
                 {droppedItems.length}
               </span>
             </TabsTrigger>
             <TabsTrigger
               value="favorites"
-              className="gap-1.5 rounded-lg data-[state=active]:bg-white/[0.08] data-[state=active]:text-white data-[state=inactive]:text-white/40 data-[state=inactive]:hover:text-white/60 transition-all duration-200"
+              className="gap-1.5 rounded-lg data-[state=active]:bg-white data-[state=active]:text-gray-900 data-[state=active]:shadow-sm data-[state=inactive]:text-gray-400 data-[state=inactive]:hover:text-gray-600 transition-all duration-200"
             >
               Favorites
-              <span className="text-[10px] px-1.5 py-0.5 rounded-full bg-white/[0.06] text-white/40 ml-1.5 tabular-nums">
+              <span className="text-[10px] px-1.5 py-0.5 rounded-full bg-gray-100 text-gray-400 ml-1.5 tabular-nums">
                 {favoriteItems.length}
               </span>
             </TabsTrigger>
           </TabsList>
 
-          {/* Finished tab */}
           <TabsContent value="finished" className="mt-4">
-            <div className="bg-white/[0.03] backdrop-blur-md border border-white/[0.07] rounded-2xl overflow-hidden">
+            <div className="bg-white border border-gray-200 rounded-2xl overflow-hidden">
               {visibleItems.length === 0 ? (
                 <TabEmpty
                   message={EMPTY_MESSAGES[activeTab]}
@@ -237,9 +236,8 @@ export default function LibraryPage() {
             </div>
           </TabsContent>
 
-          {/* Archived tab */}
           <TabsContent value="archived" className="mt-4">
-            <div className="bg-white/[0.03] backdrop-blur-md border border-white/[0.07] rounded-2xl overflow-hidden">
+            <div className="bg-white border border-gray-200 rounded-2xl overflow-hidden">
               {visibleItems.length === 0 ? (
                 <TabEmpty
                   message={
@@ -260,9 +258,8 @@ export default function LibraryPage() {
             </div>
           </TabsContent>
 
-          {/* Dropped tab */}
           <TabsContent value="dropped" className="mt-4">
-            <div className="bg-white/[0.03] backdrop-blur-md border border-white/[0.07] rounded-2xl overflow-hidden">
+            <div className="bg-white border border-gray-200 rounded-2xl overflow-hidden">
               {visibleItems.length === 0 ? (
                 <TabEmpty
                   message={
@@ -283,9 +280,8 @@ export default function LibraryPage() {
             </div>
           </TabsContent>
 
-          {/* Favorites tab */}
           <TabsContent value="favorites" className="mt-4">
-            <div className="bg-white/[0.03] backdrop-blur-md border border-white/[0.07] rounded-2xl overflow-hidden">
+            <div className="bg-white border border-gray-200 rounded-2xl overflow-hidden">
               {visibleItems.length === 0 ? (
                 <TabEmpty
                   message={

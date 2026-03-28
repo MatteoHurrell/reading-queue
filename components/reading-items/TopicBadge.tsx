@@ -8,14 +8,14 @@ interface Props {
 }
 
 const TOPIC_CLASSES: Record<Topic, string> = {
-  markets: 'bg-indigo-500/10 text-indigo-300 border border-indigo-500/20',
-  'finance-business': 'bg-blue-500/10 text-blue-300 border border-blue-500/20',
-  'tech-product': 'bg-cyan-500/10 text-cyan-300 border border-cyan-500/20',
-  'politics-policy': 'bg-orange-500/10 text-orange-300 border border-orange-500/20',
-  economics: 'bg-violet-500/10 text-violet-300 border border-violet-500/20',
-  'essays-opinion': 'bg-pink-500/10 text-pink-300 border border-pink-500/20',
-  'career-learning': 'bg-green-500/10 text-green-300 border border-green-500/20',
-  other: 'bg-white/[0.05] text-white/35 border border-white/10',
+  markets: 'bg-indigo-50 text-indigo-700 border border-indigo-200',
+  'finance-business': 'bg-blue-50 text-blue-700 border border-blue-200',
+  'tech-product': 'bg-cyan-50 text-cyan-700 border border-cyan-200',
+  'politics-policy': 'bg-orange-50 text-orange-700 border border-orange-200',
+  economics: 'bg-violet-50 text-violet-700 border border-violet-200',
+  'essays-opinion': 'bg-pink-50 text-pink-700 border border-pink-200',
+  'career-learning': 'bg-green-50 text-green-700 border border-green-200',
+  other: 'bg-gray-50 text-gray-500 border border-gray-200',
 }
 
 export default function TopicBadge({ topic }: Props) {

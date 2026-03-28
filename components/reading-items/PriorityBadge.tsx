@@ -8,9 +8,9 @@ interface Props {
 }
 
 const PRIORITY_CLASSES: Record<Priority, string> = {
-  high: 'bg-red-500/10 text-red-400 border border-red-500/20',
-  medium: 'bg-amber-500/10 text-amber-400 border border-amber-500/20',
-  low: 'bg-white/[0.05] text-white/35 border border-white/10',
+  high: 'bg-red-50 text-red-700 border border-red-200',
+  medium: 'bg-amber-50 text-amber-700 border border-amber-200',
+  low: 'bg-gray-50 text-gray-500 border border-gray-200',
 }
 
 export default function PriorityBadge({ priority }: Props) {
