@@ -237,10 +237,12 @@ export default function QueuePage() {
               onValueChange={(val) => setFilter('topic', val as Topic | 'all')}
             >
               <SelectTrigger size="sm" className="min-w-[130px]">
-                <SelectValue placeholder="Topic" />
+                <SelectValue placeholder="All Topics">
+                  {filters.topic === 'all' ? 'All Topics' : TOPIC_LABELS[filters.topic as Topic]}
+                </SelectValue>
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="all">All topics</SelectItem>
+                <SelectItem value="all">All Topics</SelectItem>
                 {TOPICS.map((t) => (
                   <SelectItem key={t} value={t}>
                     {TOPIC_LABELS[t]}
@@ -255,10 +257,12 @@ export default function QueuePage() {
               onValueChange={(val) => setFilter('publisher', val as string | 'all')}
             >
               <SelectTrigger size="sm" className="min-w-[130px]">
-                <SelectValue placeholder="Publisher" />
+                <SelectValue placeholder="All Publishers">
+                  {filters.publisher === 'all' ? 'All Publishers' : filters.publisher}
+                </SelectValue>
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="all">All publishers</SelectItem>
+                <SelectItem value="all">All Publishers</SelectItem>
                 {uniquePublishers.map((p) => (
                   <SelectItem key={p} value={p}>
                     {p}
@@ -275,10 +279,12 @@ export default function QueuePage() {
               }
             >
               <SelectTrigger size="sm" className="min-w-[120px]">
-                <SelectValue placeholder="Source type" />
+                <SelectValue placeholder="All Types">
+                  {filters.sourceType === 'all' ? 'All Types' : SOURCE_TYPE_LABELS[filters.sourceType as SourceType]}
+                </SelectValue>
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="all">All types</SelectItem>
+                <SelectItem value="all">All Types</SelectItem>
                 {SOURCE_TYPES.map((s) => (
                   <SelectItem key={s} value={s}>
                     {SOURCE_TYPE_LABELS[s]}
@@ -295,10 +301,12 @@ export default function QueuePage() {
               }
             >
               <SelectTrigger size="sm" className="min-w-[110px]">
-                <SelectValue placeholder="Priority" />
+                <SelectValue placeholder="All Priorities">
+                  {filters.priority === 'all' ? 'All Priorities' : PRIORITY_LABELS[filters.priority as Priority]}
+                </SelectValue>
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="all">All priorities</SelectItem>
+                <SelectItem value="all">All Priorities</SelectItem>
                 {(['high', 'medium', 'low'] as Priority[]).map((p) => (
                   <SelectItem key={p} value={p}>
                     {PRIORITY_LABELS[p]}
@@ -315,7 +323,11 @@ export default function QueuePage() {
               }
             >
               <SelectTrigger size="sm" className="min-w-[130px]">
-                <SelectValue placeholder="Read time" />
+                <SelectValue placeholder="Any length">
+                  {filters.maxMinutes === null
+                    ? 'Any length'
+                    : MAX_MINUTES_OPTIONS.find((o) => o.value === String(filters.maxMinutes))?.label ?? 'Any length'}
+                </SelectValue>
               </SelectTrigger>
               <SelectContent>
                 {MAX_MINUTES_OPTIONS.map((opt) => (

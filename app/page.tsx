@@ -63,12 +63,12 @@ export default function DashboardPage() {
           />
         </div>
       ) : (
-        <div className="flex flex-col gap-6 max-w-5xl mx-auto">
+        <div className="flex flex-col space-y-5 max-w-5xl mx-auto px-6 py-6">
           {/* Inbox triage banner */}
           {inboxItems.length > 0 && (
             <Link
               href="/inbox"
-              className="flex items-center justify-between px-4 py-2.5 bg-amber-500/10 border border-amber-500/20 rounded-lg text-sm hover:bg-amber-500/15 hover:border-amber-500/30 transition-colors group"
+              className="flex items-center justify-between px-4 py-2.5 bg-amber-500/10 border border-amber-500/20 rounded-xl text-sm hover:bg-amber-500/15 hover:border-amber-500/30 transition-colors group"
             >
               <span className="text-amber-400/80 group-hover:text-amber-400 transition-colors">
                 You have{' '}

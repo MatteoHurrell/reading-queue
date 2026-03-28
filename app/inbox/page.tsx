@@ -18,7 +18,7 @@ import ConfirmDeleteDialog from '@/components/reading-items/ConfirmDeleteDialog'
 import QuickAddModal from '@/components/reading-items/QuickAddModal'
 import EmptyState from '@/components/shared/EmptyState'
 import { getInboxItems } from '@/lib/selectors'
-import { TOPICS, TOPIC_LABELS } from '@/lib/constants'
+import { TOPICS, TOPIC_LABELS, PRIORITY_LABELS } from '@/lib/constants'
 import type { ReadingItem, Priority, Topic } from '@/lib/types'
 
 export default function InboxPage() {
@@ -156,13 +156,15 @@ function TriageBar({ item, onTransition, onUpdate }: TriageBarProps) {
           value={item.priority}
           onValueChange={(val) => onUpdate(item.id, { priority: val as Priority })}
         >
-          <SelectTrigger className="h-7 text-xs w-28 bg-transparent border-white/[0.12] text-white/50 hover:border-white/25 focus:ring-0">
-            <SelectValue />
+          <SelectTrigger className="h-7 text-xs min-w-[120px] bg-transparent border-white/[0.12] text-white/50 hover:border-white/25 focus:ring-0">
+            <SelectValue>{PRIORITY_LABELS[item.priority]}</SelectValue>
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value="high">High priority</SelectItem>
-            <SelectItem value="medium">Medium priority</SelectItem>
-            <SelectItem value="low">Low priority</SelectItem>
+            {(['high', 'medium', 'low'] as Priority[]).map((p) => (
+              <SelectItem key={p} value={p}>
+                {PRIORITY_LABELS[p]}
+              </SelectItem>
+            ))}
           </SelectContent>
         </Select>
 
@@ -170,8 +172,8 @@ function TriageBar({ item, onTransition, onUpdate }: TriageBarProps) {
           value={item.topic}
           onValueChange={(val) => onUpdate(item.id, { topic: val as Topic })}
         >
-          <SelectTrigger className="h-7 text-xs w-36 bg-transparent border-white/[0.12] text-white/50 hover:border-white/25 focus:ring-0">
-            <SelectValue />
+          <SelectTrigger className="h-7 text-xs min-w-[160px] bg-transparent border-white/[0.12] text-white/50 hover:border-white/25 focus:ring-0">
+            <SelectValue>{TOPIC_LABELS[item.topic]}</SelectValue>
           </SelectTrigger>
           <SelectContent>
             {TOPICS.map((t) => (

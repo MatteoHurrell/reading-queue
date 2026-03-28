@@ -24,6 +24,7 @@ import {
   YAxis,
   CartesianGrid,
   Tooltip,
+  LabelList,
 } from 'recharts'
 
 // ---- Shared chart style constants ----
@@ -215,12 +216,14 @@ export default function InsightsPage() {
               <BarChart
                 data={topicData}
                 layout="vertical"
-                margin={{ top: 0, right: 24, left: 8, bottom: 0 }}
+                margin={{ top: 0, right: 40, left: 8, bottom: 0 }}
               >
                 <CartesianGrid strokeDasharray="3 3" stroke={GRID_STROKE} horizontal={false} />
                 <XAxis
                   type="number"
                   allowDecimals={false}
+                  domain={[0, 'dataMax']}
+                  allowDataOverflow={false}
                   tick={{ fill: TICK_FILL, fontSize: TICK_FONT_SIZE }}
                   axisLine={false}
                   tickLine={false}
@@ -234,7 +237,9 @@ export default function InsightsPage() {
                   tickLine={false}
                 />
                 <Tooltip content={<ChartTooltip />} />
-                <Bar dataKey="count" name="Items" fill="#3b82f6" radius={[0, 3, 3, 0]} />
+                <Bar dataKey="count" name="Items" fill="#3b82f6" radius={[0, 4, 4, 0]} barSize={18} minPointSize={4}>
+                  <LabelList dataKey="count" position="right" style={{ fill: '#ffffff60', fontSize: 11 }} />
+                </Bar>
               </BarChart>
             </ResponsiveContainer>
           </div>
@@ -248,12 +253,14 @@ export default function InsightsPage() {
               <BarChart
                 data={publisherData}
                 layout="vertical"
-                margin={{ top: 0, right: 24, left: 8, bottom: 0 }}
+                margin={{ top: 0, right: 40, left: 8, bottom: 0 }}
               >
                 <CartesianGrid strokeDasharray="3 3" stroke={GRID_STROKE} horizontal={false} />
                 <XAxis
                   type="number"
                   allowDecimals={false}
+                  domain={[0, 'dataMax']}
+                  allowDataOverflow={false}
                   tick={{ fill: TICK_FILL, fontSize: TICK_FONT_SIZE }}
                   axisLine={false}
                   tickLine={false}
@@ -267,7 +274,9 @@ export default function InsightsPage() {
                   tickLine={false}
                 />
                 <Tooltip content={<ChartTooltip />} />
-                <Bar dataKey="count" name="Items" fill="#f59e0b" radius={[0, 3, 3, 0]} />
+                <Bar dataKey="count" name="Items" fill="#f59e0b" radius={[0, 4, 4, 0]} barSize={18} minPointSize={4}>
+                  <LabelList dataKey="count" position="right" style={{ fill: '#ffffff60', fontSize: 11 }} />
+                </Bar>
               </BarChart>
             </ResponsiveContainer>
           </div>
