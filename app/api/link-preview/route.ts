@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server'
-import type { LinkPreviewResult } from '@/lib/link-preview'
+import { extractJsonLdImage, type LinkPreviewResult } from '@/lib/link-preview'
+import { isSafeRemoteUrl } from '@/lib/remote-url'
 
 const UA =
   'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36'
@@ -54,26 +55,12 @@ function normalizeImageUrl(baseUrl: string, image: string | undefined): string |
   }
 }
 
-function isSafeRemoteUrl(url: URL): boolean {
-  if (url.protocol !== 'http:' && url.protocol !== 'https:') return false
-  const host = url.hostname.toLowerCase()
-  if (
-    host === 'localhost' ||
-    host === '127.0.0.1' ||
-    host === '0.0.0.0' ||
-    host.endsWith('.local')
-  ) {
-    return false
-  }
-  if (host === '169.254.169.254') return false
-  if (host.startsWith('10.')) return false
-  if (host.startsWith('192.168.')) return false
-  const m = /^172\.(\d+)\./.exec(host)
-  if (m) {
-    const second = Number(m[1])
-    if (second >= 16 && second <= 31) return false
-  }
-  return true
+function extractLinkRelImageSrc(html: string): string | undefined {
+  const m =
+    html.match(/<link[^>]+\srel=["']image_src["'][^>]*\shref=["']([^"']+)["']/i) ||
+    html.match(/<link[^>]*\shref=["']([^"']+)["'][^>]*\srel=["']image_src["']/i)
+  const href = m?.[1]?.trim()
+  return href || undefined
 }
 
 export async function GET(request: Request) {
@@ -123,7 +110,11 @@ export async function GET(request: Request) {
       extractMeta(html, 'property', 'og:image:secure_url') ||
       extractMeta(html, 'property', 'og:image') ||
       extractMeta(html, 'name', 'twitter:image') ||
-      extractMeta(html, 'name', 'twitter:image:src')
+      extractMeta(html, 'name', 'twitter:image:src') ||
+      extractMeta(html, 'name', 'twitter:image0')
+
+    const ldImage = extractJsonLdImage(html)
+    const linkImage = extractLinkRelImageSrc(html)
 
     const title =
       extractMeta(html, 'property', 'og:title') ||
@@ -139,7 +130,10 @@ export async function GET(request: Request) {
       extractMeta(html, 'property', 'og:site_name') ||
       extractMeta(html, 'name', 'application-name')
 
-    const imageUrl = normalizeImageUrl(pageUrl.href, ogImage)
+    const imageUrl =
+      normalizeImageUrl(pageUrl.href, ogImage) ||
+      normalizeImageUrl(pageUrl.href, ldImage) ||
+      normalizeImageUrl(pageUrl.href, linkImage)
 
     const partial = !title && !description && !imageUrl
 

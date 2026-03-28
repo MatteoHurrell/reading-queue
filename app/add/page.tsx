@@ -13,6 +13,23 @@ import { BookMarked, CheckCircle, AlertCircle, Loader2, ExternalLink } from 'luc
 
 type PageState = 'saving' | 'saved' | 'manual' | 'error'
 
+/**
+ * Bookmarklet popups: try to close immediately. If the browser won't close the window,
+ * fall back to the normal "saved" UI after a short delay.
+ */
+function tryCloseQuietBookmarkletFallback(onStillVisible: () => void) {
+  try {
+    window.close()
+  } catch {
+    /* ignore */
+  }
+  window.setTimeout(() => {
+    if (typeof document !== 'undefined' && document.visibilityState === 'visible') {
+      onStillVisible()
+    }
+  }, 280)
+}
+
 /** macOS shows this in Notification Center when the browser allows notifications for this origin. */
 async function notifyReadingQueueSaved(title: string) {
   if (typeof window === 'undefined' || !('Notification' in window)) return
@@ -52,6 +69,8 @@ function AddPageInner() {
 
   const urlParam = searchParams.get('url') ?? ''
   const titleParam = searchParams.get('title') ?? ''
+  /** Bookmarklet / popup: save then close immediately; use OS notification when permitted. */
+  const quietParam = searchParams.get('quiet') === '1'
   const hasUrl = urlParam.length > 0
 
   const [state, setState] = useState<PageState>(hasUrl ? 'saving' : 'manual')
@@ -113,6 +132,10 @@ function AddPageInner() {
     void (async () => {
       try {
         await persistFromUrl(urlParam, titleParam || undefined)
+        if (quietParam && hasUrl) {
+          tryCloseQuietBookmarkletFallback(() => setState('saved'))
+          return
+        }
         setState('saved')
       } catch (err) {
         const msg = err instanceof Error ? err.message : 'Something went wrong.'
@@ -120,7 +143,7 @@ function AddPageInner() {
         setState('error')
       }
     })()
-  }, [hasUrl, urlParam, titleParam, persistFromUrl])
+  }, [hasUrl, urlParam, titleParam, persistFromUrl, quietParam])
 
   useEffect(() => {
     if (state !== 'saved') return
@@ -160,6 +183,10 @@ function AddPageInner() {
       void (async () => {
         try {
           await persistFromUrl(urlParam, titleParam || undefined)
+          if (quietParam) {
+            tryCloseQuietBookmarkletFallback(() => setState('saved'))
+            return
+          }
           setState('saved')
         } catch (err) {
           const msg = err instanceof Error ? err.message : 'Something went wrong.'

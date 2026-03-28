@@ -52,3 +52,57 @@ export function derivePublisherFromUrl(url: string): string {
     return 'Other'
   }
 }
+
+/** First absolute image URL from JSON-LD blocks (NewsArticle, etc.). */
+export function extractJsonLdImage(html: string): string | undefined {
+  const re =
+    /<script[^>]*type=["']application\/ld\+json["'][^>]*>([\s\S]*?)<\/script>/gi
+  let m: RegExpExecArray | null
+  while ((m = re.exec(html)) !== null) {
+    const raw = m[1].trim()
+    if (!raw) continue
+    try {
+      const data = JSON.parse(raw) as unknown
+      const found = pickImageFromLdValue(data)
+      if (found) return found
+    } catch {
+      continue
+    }
+  }
+  return undefined
+}
+
+function pickImageFromLdValue(val: unknown): string | undefined {
+  if (!val || typeof val !== 'object') return undefined
+  if (Array.isArray(val)) {
+    for (const item of val) {
+      const x = pickImageFromLdValue(item)
+      if (x) return x
+    }
+    return undefined
+  }
+  const o = val as Record<string, unknown>
+  if (Array.isArray(o['@graph'])) {
+    for (const item of o['@graph']) {
+      const x = pickImageFromLdValue(item)
+      if (x) return x
+    }
+  }
+  return normalizeLdImageField(o.image)
+}
+
+function normalizeLdImageField(image: unknown): string | undefined {
+  if (typeof image === 'string' && /^https?:\/\//i.test(image)) return image
+  if (Array.isArray(image)) {
+    for (const item of image) {
+      const x = normalizeLdImageField(item)
+      if (x) return x
+    }
+    return undefined
+  }
+  if (image && typeof image === 'object' && 'url' in image) {
+    const u = (image as { url: unknown }).url
+    if (typeof u === 'string' && /^https?:\/\//i.test(u)) return u
+  }
+  return undefined
+}

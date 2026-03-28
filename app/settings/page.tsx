@@ -7,9 +7,10 @@ import { exportData, importData } from '@/lib/storage'
 import { BookMarked } from 'lucide-react'
 import type { ReadingItem } from '@/lib/types'
 
-const BOOKMARKLET_PROD = `javascript:(function(){var u=encodeURIComponent(window.location.href);window.open('https://reading-queue.vercel.app/add?url='+u,'rq_add','width=420,height=380,left='+(screen.width/2-210)+',top='+(screen.height/2-190));})();`
+/** quiet=1 closes the popup right after save; setTimeout focuses the article tab again. */
+const BOOKMARKLET_PROD = `javascript:(function(){var u=encodeURIComponent(window.location.href);window.open('https://reading-queue.vercel.app/add?url='+u+'&quiet=1','rq_add','width=380,height=300,left='+(screen.width-400)+',top=32');setTimeout(function(){window.focus();},40);})();`
 
-const BOOKMARKLET_DEV = `javascript:(function(){var u=encodeURIComponent(window.location.href);window.open('http://localhost:3000/add?url='+u,'rq_add','width=420,height=380,left='+(screen.width/2-210)+',top='+(screen.height/2-190));})();`
+const BOOKMARKLET_DEV = `javascript:(function(){var u=encodeURIComponent(window.location.href);window.open('http://localhost:3000/add?url='+u+'&quiet=1','rq_add','width=380,height=300,left='+(screen.width-400)+',top=32');setTimeout(function(){window.focus();},40);})();`
 
 function Section({ title, children }: { title: string; children: React.ReactNode }) {
   return (
@@ -64,8 +65,10 @@ export default function SettingsPage() {
       <div className="max-w-xl space-y-4">
         <Section title="Quick Capture">
           <p className="text-sm text-muted-foreground">
-            Drag the button below to your bookmark bar. One click saves the current page — we fetch the
-            title and preview from the site automatically.
+            Drag the button below to your bookmark bar. One click saves the current page in a small
+            window that closes itself when done, while your tab stays focused. Allow notifications for
+            this site if you want a system toast when a save finishes. We still fetch the title and
+            preview from the page.
           </p>
           <div className="flex flex-wrap items-center gap-3">
             <a

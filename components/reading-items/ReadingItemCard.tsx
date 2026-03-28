@@ -1,6 +1,7 @@
 'use client'
 
 import { useState } from 'react'
+import Image from 'next/image'
 import { Star, MoreHorizontal, ExternalLink } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import {
@@ -30,6 +31,10 @@ function getDomain(url: string): string {
   }
 }
 
+function proxiedPreviewSrc(previewImageUrl: string): string {
+  return `/api/preview-image?url=${encodeURIComponent(previewImageUrl)}`
+}
+
 export default function ReadingItemCard({
   item,
   onEdit,
@@ -48,12 +53,14 @@ export default function ReadingItemCard({
           href={item.url}
           target="_blank"
           rel="noopener noreferrer"
-          className="block aspect-[2/1] bg-muted/50 overflow-hidden"
+          className="block relative aspect-[2/1] bg-muted/50 overflow-hidden"
         >
-          <img
-            src={item.previewImageUrl}
+          <Image
+            src={proxiedPreviewSrc(item.previewImageUrl!)}
             alt=""
-            className="size-full object-cover"
+            fill
+            sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 420px"
+            className="object-cover"
             onError={() => setImageFailed(true)}
           />
         </a>
