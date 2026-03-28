@@ -62,7 +62,6 @@ export default function QueuePage() {
   const [deleteId, setDeleteId] = useState<string | null>(null)
   const [searchQuery, setSearchQuery] = useState('')
 
-  // Derive unique publishers from queue items
   const queueBaseItems = useMemo(
     () => items.filter((i) => i.status === 'queued' || i.status === 'reading'),
     [items]
@@ -76,7 +75,6 @@ export default function QueuePage() {
     return Array.from(seen).sort()
   }, [queueBaseItems])
 
-  // Apply filters to queued + reading items (mirrors useFilters logic but allows 'reading')
   const filteredItems = useMemo(() => {
     let result = queueBaseItems
 
@@ -108,7 +106,6 @@ export default function QueuePage() {
       )
     }
 
-    // Apply text search
     if (searchQuery.trim()) {
       const q = searchQuery.trim().toLowerCase()
       result = result.filter(
@@ -117,7 +114,9 @@ export default function QueuePage() {
           item.publisher.toLowerCase().includes(q) ||
           (item.author?.toLowerCase().includes(q) ?? false) ||
           item.tags.some((tag) => tag.toLowerCase().includes(q)) ||
-          (item.notes?.toLowerCase().includes(q) ?? false)
+          (item.notes?.toLowerCase().includes(q) ?? false) ||
+          (item.whySaved?.toLowerCase().includes(q) ?? false) ||
+          (item.previewDescription?.toLowerCase().includes(q) ?? false)
       )
     }
 
@@ -207,21 +206,21 @@ export default function QueuePage() {
     <AppShell pageTitle="Queue">
       <div className="flex flex-col gap-5">
         {/* Search + Filter bar */}
-        <div className="bg-white/[0.03] backdrop-blur-md border border-white/[0.07] rounded-2xl px-4 py-3 flex flex-col gap-3">
+        <div className="bg-white border border-gray-200 rounded-2xl px-4 py-3 flex flex-col gap-3">
           {/* Search row */}
           <div className="relative">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 size-3.5 text-white/30 pointer-events-none" />
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 size-3.5 text-gray-400 pointer-events-none" />
             <input
               type="text"
               placeholder="Search queue..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full h-8 bg-white/[0.05] border border-white/[0.08] rounded-xl pl-8 pr-8 text-sm text-white/70 placeholder:text-white/25 outline-none focus:border-indigo-500/40 transition-colors"
+              className="w-full h-8 bg-gray-50 border border-gray-200 rounded-xl pl-8 pr-8 text-sm text-gray-700 placeholder:text-gray-300 outline-none focus:border-gray-400 transition-colors"
             />
             {searchQuery && (
               <button
                 onClick={() => setSearchQuery('')}
-                className="absolute right-2.5 top-1/2 -translate-y-1/2 text-white/30 hover:text-white/60 transition-colors"
+                className="absolute right-2.5 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 transition-colors"
                 aria-label="Clear search"
               >
                 <X className="size-3.5" />
@@ -231,7 +230,6 @@ export default function QueuePage() {
 
           {/* Filters row */}
           <div className="flex flex-wrap items-center gap-2">
-            {/* Topic */}
             <Select
               value={filters.topic}
               onValueChange={(val) => setFilter('topic', val as Topic | 'all')}
@@ -251,7 +249,6 @@ export default function QueuePage() {
               </SelectContent>
             </Select>
 
-            {/* Publisher */}
             <Select
               value={filters.publisher}
               onValueChange={(val) => setFilter('publisher', val as string | 'all')}
@@ -271,7 +268,6 @@ export default function QueuePage() {
               </SelectContent>
             </Select>
 
-            {/* Source type */}
             <Select
               value={filters.sourceType}
               onValueChange={(val) =>
@@ -293,7 +289,6 @@ export default function QueuePage() {
               </SelectContent>
             </Select>
 
-            {/* Priority */}
             <Select
               value={filters.priority}
               onValueChange={(val) =>
@@ -315,7 +310,6 @@ export default function QueuePage() {
               </SelectContent>
             </Select>
 
-            {/* Max read time */}
             <Select
               value={filters.maxMinutes === null ? 'any' : String(filters.maxMinutes)}
               onValueChange={(val) =>
@@ -338,13 +332,12 @@ export default function QueuePage() {
               </SelectContent>
             </Select>
 
-            {/* Favorites toggle */}
             <button
               onClick={() => setFilter('favoritesOnly', !filters.favoritesOnly)}
               className={`inline-flex items-center gap-1.5 h-7 px-2.5 rounded-[min(var(--radius-md),10px)] text-[0.8rem] font-medium transition-colors border ${
                 filters.favoritesOnly
-                  ? 'bg-amber-500/20 text-amber-400 border-amber-500/30'
-                  : 'bg-transparent text-white/50 border-white/[0.12] hover:text-white/70 hover:border-white/20'
+                  ? 'bg-amber-50 text-amber-700 border-amber-200'
+                  : 'bg-transparent text-gray-500 border-gray-200 hover:text-gray-700 hover:border-gray-300'
               }`}
               aria-pressed={filters.favoritesOnly}
             >
@@ -355,7 +348,6 @@ export default function QueuePage() {
               Favorites
             </button>
 
-            {/* Sort */}
             <Select
               value={filters.sort}
               onValueChange={(val) =>
@@ -377,13 +369,12 @@ export default function QueuePage() {
               </SelectContent>
             </Select>
 
-            {/* Reset */}
             {(isFiltersActive || hasActiveSearch) && (
               <Button
                 variant="ghost"
                 size="sm"
                 onClick={handleResetAll}
-                className="text-white/40 hover:text-white/70 gap-1"
+                className="text-gray-400 hover:text-gray-700 gap-1"
               >
                 <RotateCcw className="size-3.5" />
                 Reset
@@ -394,18 +385,18 @@ export default function QueuePage() {
 
         {/* Toolbar: count + view toggle */}
         <div className="flex items-center justify-between gap-3">
-          <span className="text-xs text-white/35">
+          <span className="text-xs text-gray-400">
             {filteredItems.length}{' '}
             {filteredItems.length === 1 ? 'item' : 'items'}
           </span>
 
-          <div className="flex items-center bg-white/[0.04] border border-white/[0.08] rounded-lg p-1">
+          <div className="flex items-center bg-gray-50 border border-gray-200 rounded-lg p-1">
             <button
               onClick={() => setViewMode('card')}
               className={`p-1.5 rounded transition-all duration-200 ${
                 viewMode === 'card'
-                  ? 'bg-white/[0.10] text-white'
-                  : 'text-white/30 hover:text-white/60'
+                  ? 'bg-white text-gray-900 shadow-sm'
+                  : 'text-gray-400 hover:text-gray-600'
               }`}
               aria-label="Card view"
               aria-pressed={viewMode === 'card'}
@@ -416,8 +407,8 @@ export default function QueuePage() {
               onClick={() => setViewMode('table')}
               className={`p-1.5 rounded transition-all duration-200 ${
                 viewMode === 'table'
-                  ? 'bg-white/[0.10] text-white'
-                  : 'text-white/30 hover:text-white/60'
+                  ? 'bg-white text-gray-900 shadow-sm'
+                  : 'text-gray-400 hover:text-gray-600'
               }`}
               aria-label="Table view"
               aria-pressed={viewMode === 'table'}
@@ -441,7 +432,7 @@ export default function QueuePage() {
             action={{ label: 'Reset filters', onClick: handleResetAll }}
           />
         ) : viewMode === 'card' ? (
-          <div className="flex flex-col gap-1.5">
+          <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-5">
             {filteredItems.map((item) => (
               <ReadingItemCard
                 key={item.id}
@@ -454,7 +445,7 @@ export default function QueuePage() {
             ))}
           </div>
         ) : (
-          <div className="bg-white/[0.03] backdrop-blur-md border border-white/[0.07] rounded-2xl overflow-hidden">
+          <div className="bg-white border border-gray-200 rounded-2xl overflow-hidden">
             <ReadingItemTable
               items={filteredItems}
               onEdit={handleEdit}

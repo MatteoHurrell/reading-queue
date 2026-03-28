@@ -53,15 +53,14 @@ export default function InboxPage() {
         {/* Page header */}
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
-            <h1 className="text-2xl font-bold text-white tracking-tight">Inbox</h1>
-            <span className="bg-amber-500/10 border border-amber-500/20 text-amber-400 text-xs font-medium px-2 py-0.5 rounded-full tabular-nums">
+            <h1 className="text-2xl font-bold text-gray-900 tracking-tight font-serif">Inbox</h1>
+            <span className="bg-amber-50 border border-amber-200 text-amber-700 text-xs font-medium px-2 py-0.5 rounded-full tabular-nums">
               {inboxItems.length}
             </span>
           </div>
           <Button
             size="sm"
-            className="gap-1.5 border-0 text-white transition-all duration-200"
-            style={{ background: 'linear-gradient(135deg, #6366f1, #8b5cf6)' }}
+            className="gap-1.5 border-0 text-white bg-gray-900 hover:bg-gray-800 transition-all duration-200"
             onClick={() => setAddOpen(true)}
           >
             <Plus className="size-3.5" />
@@ -83,9 +82,10 @@ export default function InboxPage() {
             {inboxItems.map((item) => (
               <div
                 key={item.id}
-                className="group flex flex-col rounded-2xl overflow-hidden border border-white/[0.07] hover:border-white/[0.14] hover:shadow-[0_8px_32px_rgba(0,0,0,0.3)] transition-all duration-200 bg-white/[0.03]"
+                className="group flex flex-col rounded-2xl overflow-hidden border border-gray-200 hover:border-gray-300 hover:shadow-sm transition-all duration-200 bg-white"
               >
                 <ReadingItemCard
+                  variant="embedded"
                   item={item}
                   onEdit={handleEdit}
                   onDelete={handleDelete}
@@ -136,17 +136,16 @@ interface TriageBarProps {
 
 function TriageBar({ item, onTransition, onUpdate }: TriageBarProps) {
   return (
-    <div className="bg-white/[0.02] border-t border-white/[0.05] rounded-b-2xl px-4 py-3 flex items-center gap-3">
+    <div className="bg-gray-50 border-t border-gray-200 rounded-b-2xl px-4 py-3 flex items-center gap-3">
       <Button
         size="sm"
-        className="h-7 px-3 text-xs border-0 text-white transition-all duration-200"
-        style={{ background: 'linear-gradient(135deg, #6366f1, #8b5cf6)' }}
+        className="h-7 px-3 text-xs border-0 text-white bg-gray-900 hover:bg-gray-800 transition-all duration-200"
         onClick={() => onTransition(item.id, 'queued')}
       >
         Move to Queue
       </Button>
       <button
-        className="h-7 px-3 text-xs bg-red-500/10 border border-red-500/20 text-red-400 hover:bg-red-500/20 rounded-lg transition-all duration-200"
+        className="h-7 px-3 text-xs bg-red-50 border border-red-200 text-red-600 hover:bg-red-100 rounded-lg transition-all duration-200"
         onClick={() => onTransition(item.id, 'dropped')}
       >
         Drop
@@ -156,7 +155,7 @@ function TriageBar({ item, onTransition, onUpdate }: TriageBarProps) {
           value={item.priority}
           onValueChange={(val) => onUpdate(item.id, { priority: val as Priority })}
         >
-          <SelectTrigger className="h-7 text-xs min-w-[120px] bg-transparent border-white/[0.12] text-white/50 hover:border-white/25 focus:ring-0">
+          <SelectTrigger className="h-7 text-xs min-w-[120px] bg-transparent border-gray-200 text-gray-500 hover:border-gray-300 focus:ring-0">
             <SelectValue>{PRIORITY_LABELS[item.priority]}</SelectValue>
           </SelectTrigger>
           <SelectContent>
@@ -172,7 +171,7 @@ function TriageBar({ item, onTransition, onUpdate }: TriageBarProps) {
           value={item.topic}
           onValueChange={(val) => onUpdate(item.id, { topic: val as Topic })}
         >
-          <SelectTrigger className="h-7 text-xs min-w-[160px] bg-transparent border-white/[0.12] text-white/50 hover:border-white/25 focus:ring-0">
+          <SelectTrigger className="h-7 text-xs min-w-[160px] bg-transparent border-gray-200 text-gray-500 hover:border-gray-300 focus:ring-0">
             <SelectValue>{TOPIC_LABELS[item.topic]}</SelectValue>
           </SelectTrigger>
           <SelectContent>

@@ -1,6 +1,7 @@
 'use client'
 
-import { useState, useEffect, useCallback } from 'react'
+import { useState, useEffect, useCallback, useRef } from 'react'
+import { Loader2 } from 'lucide-react'
 import {
   Dialog,
   DialogContent,
@@ -27,6 +28,8 @@ import {
   PRIORITY_LABELS,
 } from '@/lib/constants'
 import type { ReadingItem, Topic, SourceType, Priority } from '@/lib/types'
+import { isLikelySocialThreadUrl } from '@/lib/link-preview'
+import type { LinkPreviewResult } from '@/lib/link-preview'
 
 interface Props {
   open: boolean
@@ -58,13 +61,20 @@ const EMPTY_FORM: FormState = {
 }
 
 const inputClass =
-  'bg-white/[0.05] border border-white/[0.1] rounded-xl text-sm text-white placeholder:text-white/25 focus:border-indigo-500/50 focus:ring-0 h-9 px-3'
+  'bg-gray-50 border border-gray-200 rounded-xl text-sm text-gray-900 placeholder:text-gray-300 focus:border-gray-400 focus:ring-0 h-9 px-3'
 
-const labelClass = 'text-xs font-medium text-white/50 uppercase tracking-wider mb-1.5'
+const labelClass = 'text-xs font-medium text-gray-500 uppercase tracking-wider mb-1.5'
 
 export default function QuickAddModal({ open, onClose, onAdd, existingItems = [] }: Props) {
   const [form, setForm] = useState<FormState>(EMPTY_FORM)
   const [errors, setErrors] = useState<{ url?: string; title?: string }>({})
+  const [previewMeta, setPreviewMeta] = useState<{
+    imageUrl?: string
+    description?: string
+  }>({})
+  const [previewLoading, setPreviewLoading] = useState(false)
+  const previewAbortRef = useRef<AbortController | null>(null)
+  const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null)
 
   const duplicateItem = form.url.trim()
     ? existingItems.find(
@@ -72,13 +82,70 @@ export default function QuickAddModal({ open, onClose, onAdd, existingItems = []
       )
     : undefined
 
-  // Reset form when modal opens
   useEffect(() => {
     if (open) {
       setForm(EMPTY_FORM)
       setErrors({})
+      setPreviewMeta({})
+      setPreviewLoading(false)
     }
   }, [open])
+
+  useEffect(() => {
+    if (!open) {
+      previewAbortRef.current?.abort()
+      if (debounceRef.current) clearTimeout(debounceRef.current)
+      return
+    }
+    const url = form.url.trim()
+    if (debounceRef.current) clearTimeout(debounceRef.current)
+    if (!url || !/^https?:\/\//i.test(url)) {
+      setPreviewMeta({})
+      setPreviewLoading(false)
+      return
+    }
+
+    debounceRef.current = setTimeout(() => {
+      previewAbortRef.current?.abort()
+      const ac = new AbortController()
+      previewAbortRef.current = ac
+      setPreviewLoading(true)
+
+      fetch(`/api/link-preview?url=${encodeURIComponent(url)}`, { signal: ac.signal })
+        .then((res) => res.json() as Promise<LinkPreviewResult>)
+        .then((data) => {
+          if (ac.signal.aborted) return
+          setPreviewMeta({
+            imageUrl: data.imageUrl,
+            description: data.description,
+          })
+          setForm((prev) => {
+            const next = { ...prev }
+            if (!prev.title.trim() && data.title?.trim()) next.title = data.title.trim()
+            if (!prev.publisher.trim()) {
+              if (data.siteName?.trim()) next.publisher = data.siteName.trim()
+              else if (isLikelySocialThreadUrl(url)) next.publisher = 'X'
+            }
+            if (isLikelySocialThreadUrl(url) && prev.sourceType === 'other') {
+              next.sourceType = 'thread'
+            }
+            return next
+          })
+        })
+        .catch(() => {
+          if (ac.signal.aborted) return
+          setPreviewMeta({})
+        })
+        .finally(() => {
+          if (!ac.signal.aborted) setPreviewLoading(false)
+        })
+    }, 550)
+
+    return () => {
+      if (debounceRef.current) clearTimeout(debounceRef.current)
+      previewAbortRef.current?.abort()
+    }
+  }, [form.url, open])
 
   function setField<K extends keyof FormState>(key: K, value: FormState[K]) {
     setForm((prev) => ({ ...prev, [key]: value }))
@@ -108,9 +175,11 @@ export default function QuickAddModal({ open, onClose, onAdd, existingItems = []
       status: 'inbox',
       isFavorite: false,
       tags: [],
+      previewImageUrl: previewMeta.imageUrl,
+      previewDescription: previewMeta.description,
     })
     onClose()
-  }, [form, onAdd, onClose])
+  }, [form, onAdd, onClose, previewMeta])
 
   function handleKeyDown(e: React.KeyboardEvent) {
     if ((e.ctrlKey || e.metaKey) && e.key === 'Enter') {
@@ -122,29 +191,47 @@ export default function QuickAddModal({ open, onClose, onAdd, existingItems = []
   return (
     <Dialog open={open} onOpenChange={(isOpen) => { if (!isOpen) onClose() }}>
       <DialogContent
-        className="sm:max-w-lg bg-[#0d1120] border border-white/[0.1] rounded-2xl shadow-2xl"
+        className="sm:max-w-lg bg-white border border-gray-200 rounded-2xl shadow-lg"
         onKeyDown={handleKeyDown}
       >
         <DialogHeader>
-          <DialogTitle className="text-lg font-semibold text-white">Add to Reading Queue</DialogTitle>
+          <DialogTitle className="text-lg font-semibold text-gray-900 font-serif">Add to Reading Queue</DialogTitle>
         </DialogHeader>
 
         <div className="flex flex-col gap-4 py-1">
           {/* URL */}
           <div className="flex flex-col gap-1">
             <label className={labelClass}>
-              URL <span className="text-indigo-400">*</span>
+              URL <span className="text-blue-600">*</span>
             </label>
             <Input
               type="url"
               placeholder="https://..."
               value={form.url}
               onChange={(e) => setField('url', e.target.value)}
-              className={`${inputClass} ${errors.url ? 'border-red-500/60' : ''}`}
+              className={`${inputClass} ${errors.url ? 'border-red-400' : ''}`}
             />
-            {errors.url && <p className="text-xs text-red-400">{errors.url}</p>}
+            {errors.url && <p className="text-xs text-red-500">{errors.url}</p>}
+            {previewLoading && form.url.trim() && (
+              <p className="text-xs text-gray-500 flex items-center gap-1.5 mt-1.5">
+                <Loader2 className="size-3.5 animate-spin shrink-0" aria-hidden />
+                Pulling title, image, and excerpt…
+              </p>
+            )}
+            {!previewLoading && previewMeta.description && (
+              <p className="text-xs text-gray-600 line-clamp-2 mt-1.5 leading-relaxed">
+                {previewMeta.description}
+              </p>
+            )}
+            {!previewLoading && previewMeta.imageUrl && (
+              <img
+                src={previewMeta.imageUrl}
+                alt=""
+                className="mt-2 w-full max-h-28 rounded-xl object-cover border border-gray-200"
+              />
+            )}
             {!errors.url && duplicateItem && (
-              <p className="text-xs text-amber-300 bg-amber-500/10 border border-amber-500/20 rounded-xl px-2.5 py-1.5">
+              <p className="text-xs text-amber-700 bg-amber-50 border border-amber-200 rounded-xl px-2.5 py-1.5">
                 This URL is already in your queue &mdash;{' '}
                 <span className="font-medium">{duplicateItem.title}</span>
               </p>
@@ -154,16 +241,16 @@ export default function QuickAddModal({ open, onClose, onAdd, existingItems = []
           {/* Title */}
           <div className="flex flex-col gap-1">
             <label className={labelClass}>
-              Title <span className="text-indigo-400">*</span>
+              Title <span className="text-blue-600">*</span>
             </label>
             <Input
               type="text"
               placeholder="Article title"
               value={form.title}
               onChange={(e) => setField('title', e.target.value)}
-              className={`${inputClass} ${errors.title ? 'border-red-500/60' : ''}`}
+              className={`${inputClass} ${errors.title ? 'border-red-400' : ''}`}
             />
-            {errors.title && <p className="text-xs text-red-400">{errors.title}</p>}
+            {errors.title && <p className="text-xs text-red-500">{errors.title}</p>}
           </div>
 
           {/* Publisher */}
@@ -192,7 +279,7 @@ export default function QuickAddModal({ open, onClose, onAdd, existingItems = []
                 value={form.topic}
                 onValueChange={(val) => setField('topic', val as Topic)}
               >
-                <SelectTrigger className="w-full bg-white/[0.05] border border-white/[0.1] rounded-xl text-sm text-white h-9">
+                <SelectTrigger className="w-full bg-gray-50 border border-gray-200 rounded-xl text-sm text-gray-900 h-9">
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
@@ -211,7 +298,7 @@ export default function QuickAddModal({ open, onClose, onAdd, existingItems = []
                 value={form.sourceType}
                 onValueChange={(val) => setField('sourceType', val as SourceType)}
               >
-                <SelectTrigger className="w-full bg-white/[0.05] border border-white/[0.1] rounded-xl text-sm text-white h-9">
+                <SelectTrigger className="w-full bg-gray-50 border border-gray-200 rounded-xl text-sm text-gray-900 h-9">
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
@@ -233,7 +320,7 @@ export default function QuickAddModal({ open, onClose, onAdd, existingItems = []
                 value={form.priority}
                 onValueChange={(val) => setField('priority', val as Priority)}
               >
-                <SelectTrigger className="w-full bg-white/[0.05] border border-white/[0.1] rounded-xl text-sm text-white h-9">
+                <SelectTrigger className="w-full bg-gray-50 border border-gray-200 rounded-xl text-sm text-gray-900 h-9">
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
@@ -268,7 +355,7 @@ export default function QuickAddModal({ open, onClose, onAdd, existingItems = []
               placeholder="Why is this worth reading?"
               value={form.whySaved}
               onChange={(e) => setField('whySaved', e.target.value)}
-              className="bg-white/[0.05] border border-white/[0.1] rounded-xl text-sm text-white placeholder:text-white/25 focus:border-indigo-500/50 focus:ring-0 min-h-[70px] resize-none px-3 py-2"
+              className="bg-gray-50 border border-gray-200 rounded-xl text-sm text-gray-900 placeholder:text-gray-300 focus:border-gray-400 focus:ring-0 min-h-[70px] resize-none px-3 py-2"
             />
           </div>
         </div>
@@ -277,14 +364,13 @@ export default function QuickAddModal({ open, onClose, onAdd, existingItems = []
           <Button
             variant="outline"
             onClick={onClose}
-            className="bg-white/[0.05] border border-white/[0.1] text-white/60 hover:text-white rounded-xl"
+            className="bg-white border border-gray-200 text-gray-600 hover:text-gray-900 rounded-xl"
           >
             Cancel
           </Button>
           <Button
             onClick={handleSubmit}
-            className="bg-gradient-to-r from-indigo-600 to-violet-600 hover:from-indigo-500 hover:to-violet-500 text-white font-medium rounded-xl border-0"
-            style={{ boxShadow: '0 0 20px rgba(99,102,241,0.3)' }}
+            className="bg-gray-900 hover:bg-gray-800 text-white font-medium rounded-xl border-0"
           >
             Add to queue
           </Button>

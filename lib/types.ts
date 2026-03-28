@@ -49,6 +49,10 @@ export interface ReadingItem {
   finishedAt?: string
   archivedAt?: string
   droppedAt?: string
+  /** Open Graph / social preview image (e.g. X post card image) */
+  previewImageUrl?: string
+  /** Short excerpt from og:description or meta description */
+  previewDescription?: string
 }
 
 export interface PersistedData {

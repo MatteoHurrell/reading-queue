@@ -50,6 +50,10 @@ export const DEMO_ITEMS: ReadingItem[] = [
     estimatedMinutes: 18,
     status: 'queued',
     whySaved: 'Classic Matt Levine analysis of retail mania',
+    previewDescription:
+      'Retail investors are at it again — this time with a new twist on an old story. A sharp look at market structure and memes.',
+    previewImageUrl:
+      'https://images.unsplash.com/photo-1611974789855-9c2a0a7236a3?auto=format&fit=crop&w=800&q=80',
     isFavorite: false,
     createdAt: '2026-03-05T10:00:00.000Z',
     updatedAt: '2026-03-05T10:00:00.000Z',
